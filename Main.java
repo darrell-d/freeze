@@ -16,7 +16,7 @@ import com.amazonaws.services.glacier.transfer.UploadResult;
 public class Main {
 
     public static String vaultName = "MtgWorks";
-    public static String archiveToUpload = "C:\\Users\\ddefreitas\\Downloads\\test.txt";
+    public static String archiveToUpload = "C:\\Users\\ddefreitas\\Downloads\\puttytel.exe";
     
     public static AmazonGlacierClient client;
 	private static Scanner scanner;
@@ -51,7 +51,26 @@ public class Main {
         {
             ArchiveTransferManager atm = new ArchiveTransferManager(client, credentials);
             
-            UploadResult result = atm.upload(vaultName, "my archive " + (new Date()), new File(archiveToUpload));
+            File uploadPayload = new File(archiveToUpload);
+            UploadResult result = atm.upload(vaultName, "my archive " + (new Date()), uploadPayload);
+            long filesize = uploadPayload.length();
+            String modifier = "";
+            if(filesize < 1048576)
+            {
+            	filesize = filesize / 1024;
+            	modifier = "KB";
+            }
+            else if(filesize > 1048576 && filesize < 1073741824 )
+            {//MB
+            	filesize = filesize / 1048576;
+            	modifier = "MB";
+            }
+            else if(filesize > 1073741824)
+            {//GB
+            	filesize = filesize / 1073741824;
+            	modifier = "GB";
+            }
+            System.out.println("FileSize: " + filesize + modifier);
             System.out.println("Archive ID: " + result.getArchiveId());
             
         } catch (Exception e)
