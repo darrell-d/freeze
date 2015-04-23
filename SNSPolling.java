@@ -1,31 +1,86 @@
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.codehaus.jackson.JsonFactory;
+import org.codehaus.jackson.JsonNode;
+import org.codehaus.jackson.JsonParseException;
+import org.codehaus.jackson.JsonParser;
+import org.codehaus.jackson.map.ObjectMapper;
+
+import com.amazonaws.AmazonClientException;
+import com.amazonaws.auth.policy.Policy;
+import com.amazonaws.auth.policy.Principal;
+import com.amazonaws.auth.policy.Resource;
+import com.amazonaws.auth.policy.Statement;
+import com.amazonaws.auth.policy.Statement.Effect;
+import com.amazonaws.auth.policy.actions.SQSActions;
 import com.amazonaws.services.glacier.AmazonGlacierClient;
 import com.amazonaws.services.glacier.model.GetJobOutputRequest;
 import com.amazonaws.services.glacier.model.GetJobOutputResult;
 import com.amazonaws.services.glacier.model.InitiateJobRequest;
 import com.amazonaws.services.glacier.model.InitiateJobResult;
 import com.amazonaws.services.glacier.model.JobParameters;
+import com.amazonaws.services.sns.AmazonSNSClient;
+import com.amazonaws.services.sns.model.CreateTopicRequest;
+import com.amazonaws.services.sns.model.CreateTopicResult;
+import com.amazonaws.services.sns.model.DeleteTopicRequest;
+import com.amazonaws.services.sns.model.SubscribeRequest;
+import com.amazonaws.services.sns.model.SubscribeResult;
+import com.amazonaws.services.sns.model.UnsubscribeRequest;
+import com.amazonaws.services.sqs.AmazonSQSClient;
+import com.amazonaws.services.sqs.model.CreateQueueRequest;
+import com.amazonaws.services.sqs.model.CreateQueueResult;
+import com.amazonaws.services.sqs.model.DeleteQueueRequest;
+import com.amazonaws.services.sqs.model.GetQueueAttributesRequest;
+import com.amazonaws.services.sqs.model.GetQueueAttributesResult;
+import com.amazonaws.services.sqs.model.Message;
+import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
+import com.amazonaws.services.sqs.model.SetQueueAttributesRequest;
 
 
 
 public class SNSPolling {
 	
-	private AmazonGlacierClient client;
-	private String vault;
-	private String userID;
-	private String region;
-	private String jobID;
+	private static AmazonGlacierClient client;
 	
-	 public static String sqsQueueName = "*** provide queue name **";
+	public static AmazonSQSClient sqsClient;
+	public static AmazonSNSClient snsClient;
 	
-	public SNSPolling(AmazonGlacierClient client, String vaultName, String userID, String region) {
+	public static String sqsQueueARN;	
+	public static String sqsQueueURL;
+	public static String sqsQueueName;
+	public static String snsTopicName;
+	public static String snsTopicARN;
+	public static String snsSubscriptionARN;
+	public static String fileName = "jobOutput.txt";
+	
+	private static String vault;
+	private static String userID;
+	private static String region;
+	private static String jobID;
+	
+	public static long sleepTime = 600; 
+	
+	
+	
+	public SNSPolling(AmazonGlacierClient client, String vaultName, String userID, String region, String queueName,String topicName) {
 		this.client = client;
 		this.vault = vaultName;
 		this.userID = userID;
 		this.region = region;
+		this.sqsQueueName = queueName;
+		this.snsTopicName = topicName;
 		jobID = "";
 	
 	}
 
+	//Initiate a request. Requires AWS Glacier ARN to be created
 	public String initRequest() {
 		
 		InitiateJobRequest initJobRequest = new InitiateJobRequest()
@@ -41,6 +96,112 @@ public class SNSPolling {
 	
 	return jobID;
 	}
+	
+	private static void setupSQS() {
+	        CreateQueueRequest request = new CreateQueueRequest()
+	            .withQueueName(sqsQueueName);
+	        CreateQueueResult result = sqsClient.createQueue(request);  
+	        sqsQueueURL = result.getQueueUrl();
+	                
+	        GetQueueAttributesRequest qRequest = new GetQueueAttributesRequest()
+	            .withQueueUrl(sqsQueueURL)
+	            .withAttributeNames("QueueArn");
+	        
+	        GetQueueAttributesResult qResult = sqsClient.getQueueAttributes(qRequest);
+	        sqsQueueARN = qResult.getAttributes().get("QueueArn");
+	        
+	        Policy sqsPolicy = 
+	            new Policy().withStatements(
+	                    new Statement(Effect.Allow)
+	                    .withPrincipals(Principal.AllUsers)
+	                    .withActions(SQSActions.SendMessage)
+	                    .withResources(new Resource(sqsQueueARN)));
+	        Map<String, String> queueAttributes = new HashMap<String, String>();
+	        queueAttributes.put("Policy", sqsPolicy.toJson());
+	        sqsClient.setQueueAttributes(new SetQueueAttributesRequest(sqsQueueURL, queueAttributes)); 
+
+    }
+	
+    private static void setupSNS() {
+        CreateTopicRequest request = new CreateTopicRequest()
+            .withName(snsTopicName);
+        CreateTopicResult result = snsClient.createTopic(request);
+        snsTopicARN = result.getTopicArn();
+
+        SubscribeRequest request2 = new SubscribeRequest()
+            .withTopicArn(snsTopicARN)
+            .withEndpoint(sqsQueueARN)
+            .withProtocol("sqs");
+        SubscribeResult result2 = snsClient.subscribe(request2);
+                
+        snsSubscriptionARN = result2.getSubscriptionArn();
+    }
+    
+    private static Boolean waitForJobToComplete(String jobId, String sqsQueueUrl) throws InterruptedException, JsonParseException, IOException {
+        
+        Boolean messageFound = false;
+        Boolean jobSuccessful = false;
+        ObjectMapper mapper = new ObjectMapper();
+        JsonFactory factory = mapper.getJsonFactory();
+        
+        while (!messageFound) {
+            List<Message> msgs = sqsClient.receiveMessage(
+               new ReceiveMessageRequest(sqsQueueUrl).withMaxNumberOfMessages(10)).getMessages();
+
+            if (msgs.size() > 0) {
+                for (Message m : msgs) {
+                    JsonParser jpMessage = factory.createJsonParser(m.getBody());
+                    JsonNode jobMessageNode = mapper.readTree(jpMessage);
+                    String jobMessage = jobMessageNode.get("Message").getTextValue();
+                    
+                    JsonParser jpDesc = factory.createJsonParser(jobMessage);
+                    JsonNode jobDescNode = mapper.readTree(jpDesc);
+                    String retrievedJobId = jobDescNode.get("JobId").getTextValue();
+                    String statusCode = jobDescNode.get("StatusCode").getTextValue();
+                    if (retrievedJobId.equals(jobId)) {
+                        messageFound = true;
+                        if (statusCode.equals("Succeeded")) {
+                            jobSuccessful = true;
+                        }
+                    }
+                }
+                
+            } else {
+              Thread.sleep(sleepTime * 1000); 
+            }
+          }
+        return (messageFound && jobSuccessful);
+    }
+    
+    private static void downloadJobOutput(String jobId) throws IOException {
+        
+        GetJobOutputRequest getJobOutputRequest = new GetJobOutputRequest()
+            .withVaultName(vault)
+            .withJobId(jobId);
+        GetJobOutputResult getJobOutputResult = client.getJobOutput(getJobOutputRequest);
+    
+        FileWriter fstream = new FileWriter(fileName);
+        BufferedWriter out = new BufferedWriter(fstream);
+        BufferedReader in = new BufferedReader(new InputStreamReader(getJobOutputResult.getBody()));            
+        String inputLine;
+        try {
+            while ((inputLine = in.readLine()) != null) {
+                out.write(inputLine);
+            }
+        }catch(IOException e) {
+            throw new AmazonClientException("Unable to save archive", e);
+        }finally{
+            try {in.close();}  catch (Exception e) {}
+            try {out.close();}  catch (Exception e) {}             
+        }
+        System.out.println("Retrieved inventory to " + fileName);
+    }
+    
+    private static void cleanUp() {
+        snsClient.unsubscribe(new UnsubscribeRequest(snsSubscriptionARN));
+        snsClient.deleteTopic(new DeleteTopicRequest(snsTopicARN));
+        sqsClient.deleteQueue(new DeleteQueueRequest(sqsQueueURL));
+    }
 	
 	
 	public void getResults()
