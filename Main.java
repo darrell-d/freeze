@@ -53,11 +53,14 @@ public class Main {
         vault = chooseArchive();
         vaultName = vaultList.get(vault).getVaultName();
         
-        //poll = new SNSPolling(client,vaultName,userID,regionName,vault);
+        poll = new SNSPolling(client,vaultName,userID,Region.getRegion(Regions.values()[region]).getName());
+        
+        //poll.initRequest();
         
         upload(credentials);
     }
 
+    //Print out a list of archives. Return int of selected archive
 	private static int chooseArchive() {
 		String marker = null;
 		   
@@ -84,8 +87,8 @@ public class Main {
 		   return scanner.nextInt();
 	}
 
+	//Check if credentials file exists, create if not.
 	private static void getKeys() throws IOException {
-		//Check if credentials file exists, create if not.
 		File f = new File(userHome + "/awsCredentials.properties");
         scanner = new Scanner(System.in);
         
@@ -109,6 +112,7 @@ public class Main {
         }
 	}
     
+	//Print and choose region to upload to
     private static int chooseRegion()
     {
     	int glacierRegion = -1;
@@ -137,6 +141,8 @@ public class Main {
         
 
     }
+    
+    //Upload file to Glacier
 	private static void upload(AWSCredentials credentials) {
 		try 
         {
@@ -169,6 +175,14 @@ public class Main {
         {
             System.err.println(e);
         }
+	}
+	
+	//List all existing Archives
+	private static void listArchives()
+	{
+		//Initiate a SNS polling request
+		//TODO: You must wait to get poll information back from an archive list request. Make the poll but keep a list of known uploaded files.
+		poll.initRequest();
 	}
 	
 }
