@@ -1,13 +1,13 @@
 import java.io.File;
-import java.util.Date;
-import java.util.List;
-import java.util.Scanner;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.List;
+import java.util.Scanner;
 
-import com.amazonaws.regions.*;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.PropertiesCredentials;
+import com.amazonaws.regions.Region;
+import com.amazonaws.regions.Regions;
 import com.amazonaws.services.glacier.AmazonGlacierClient;
 import com.amazonaws.services.glacier.model.DescribeVaultOutput;
 import com.amazonaws.services.glacier.model.ListVaultsRequest;
@@ -15,6 +15,10 @@ import com.amazonaws.services.glacier.model.ListVaultsResult;
 import com.amazonaws.services.glacier.transfer.ArchiveTransferManager;
 import com.amazonaws.services.glacier.transfer.UploadResult;
 import com.amazonaws.services.identitymanagement.AmazonIdentityManagementClient;
+import com.amazonaws.services.sns.AmazonSNSClient;
+import com.amazonaws.services.sqs.AmazonSQSClient;
+import com.amazonaws.auth.*;
+
 
 public class Main {
 
@@ -31,11 +35,12 @@ public class Main {
 	private static AmazonGlacierClient client;
 	private static List<DescribeVaultOutput> vaultList ;
 	private static SNSPolling poll;
+	private static AWSCredentials credentials;
     
 
     public static void main(String[] args) throws IOException {
     	
-    	AWSCredentials credentials = new PropertiesCredentials(new File(System.getProperty("user.home") + "/MyFile.properties"));
+    	credentials = new PropertiesCredentials(new File(System.getProperty("user.home") + "/MyFile.properties"));
         AmazonIdentityManagementClient iamClient = new AmazonIdentityManagementClient(credentials);
         
         String userArn = iamClient.getUser().getUser().getArn();
@@ -49,15 +54,14 @@ public class Main {
        client = new AmazonGlacierClient(credentials);
         client.setEndpoint("https://glacier."+ Region.getRegion(Regions.values()[region]) +".amazonaws.com/"); 
         
-        System.out.println("Please choose your archive:");
+        System.out.println("What archive do you want to upload to?");
         vault = chooseArchive();
         vaultName = vaultList.get(vault).getVaultName();
         
-        poll = new SNSPolling(client,vaultName,userID,Region.getRegion(Regions.values()[region]).getName());
+        poll = new SNSPolling(client,vaultName,userID,Region.getRegion(Regions.values()[region]).getName(), "us-east-1", "Getiles");
+        listArchives();
         
-        //poll.initRequest();
-        
-        upload(credentials);
+        //upload(credentials);
     }
 
     //Print out a list of archives. Return int of selected archive
@@ -182,7 +186,34 @@ public class Main {
 	{
 		//Initiate a SNS polling request
 		//TODO: You must wait to get poll information back from an archive list request. Make the poll but keep a list of known uploaded files.
-		poll.initRequest();
+		
+
+        client = new AmazonGlacierClient(credentials);
+        client.setEndpoint("https://glacier." + region + ".amazonaws.com");
+        SNSPolling.sqsClient = new AmazonSQSClient(credentials);
+        SNSPolling.sqsClient.setEndpoint("https://sqs." + Region.getRegion(Regions.values()[region])+ ".amazonaws.com");
+        SNSPolling.snsClient = new AmazonSNSClient(credentials);
+        SNSPolling.snsClient.setEndpoint("https://sns." + Region.getRegion(Regions.values()[region])+ ".amazonaws.com");
+        
+        try {
+            SNSPolling.setupSQS();
+            
+            SNSPolling.setupSNS();
+
+            String jobId = SNSPolling.initiateJobRequest();
+            System.out.println("Jobid = " + jobId);
+            
+            Boolean success = SNSPolling.waitForJobToComplete(jobId, SNSPolling.sqsQueueURL);
+            if (!success) { throw new Exception("Job did not complete successfully."); }
+            
+            SNSPolling.downloadJobOutput(jobId);
+            
+            SNSPolling.cleanUp();
+            
+        } catch (Exception e) {
+            System.err.println("Inventory retrieval failed.");
+            System.err.println(e);
+        } 
 	}
 	
 }

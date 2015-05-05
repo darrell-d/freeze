@@ -80,24 +80,22 @@ public class SNSPolling {
 	
 	}
 
-	//Initiate a request. Requires AWS Glacier ARN to be created
-	public String initRequest() {
-		
-		InitiateJobRequest initJobRequest = new InitiateJobRequest()
-	    .withVaultName(vault)
-	    .withJobParameters(
-	            new JobParameters()
-	                .withType("inventory-retrieval")
-	                .withSNSTopic("arn:aws:glacier:"+ region +":"+ userID +":vaults/" + vault)
-	      );
-
-	InitiateJobResult initJobResult = client.initiateJob(initJobRequest);
-	jobID = initJobResult.getJobId();
+	//Initiate a request. Requires AWS Glacier ARN to be created (jobID)
+	public static String initiateJobRequest() {
+        
+        JobParameters jobParameters = new JobParameters()
+            .withType("inventory-retrieval")
+            .withSNSTopic(snsTopicARN);
+        
+        InitiateJobRequest request = new InitiateJobRequest()
+            .withVaultName(vault)
+            .withJobParameters(jobParameters);
+        
+        InitiateJobResult response = client.initiateJob(request);
+        return response.getJobId();
+    }
 	
-	return jobID;
-	}
-	
-	private static void setupSQS() {
+	public static void setupSQS() {
 	        CreateQueueRequest request = new CreateQueueRequest()
 	            .withQueueName(sqsQueueName);
 	        CreateQueueResult result = sqsClient.createQueue(request);  
@@ -122,7 +120,7 @@ public class SNSPolling {
 
     }
 	
-    private static void setupSNS() {
+	public static void setupSNS() {
         CreateTopicRequest request = new CreateTopicRequest()
             .withName(snsTopicName);
         CreateTopicResult result = snsClient.createTopic(request);
@@ -137,7 +135,7 @@ public class SNSPolling {
         snsSubscriptionARN = result2.getSubscriptionArn();
     }
     
-    private static Boolean waitForJobToComplete(String jobId, String sqsQueueUrl) throws InterruptedException, JsonParseException, IOException {
+	public static Boolean waitForJobToComplete(String jobId, String sqsQueueUrl) throws InterruptedException, JsonParseException, IOException {
         
         Boolean messageFound = false;
         Boolean jobSuccessful = false;
@@ -145,6 +143,7 @@ public class SNSPolling {
         JsonFactory factory = mapper.getJsonFactory();
         
         while (!messageFound) {
+        	System.out.print(".");
             List<Message> msgs = sqsClient.receiveMessage(
                new ReceiveMessageRequest(sqsQueueUrl).withMaxNumberOfMessages(10)).getMessages();
 
@@ -173,7 +172,7 @@ public class SNSPolling {
         return (messageFound && jobSuccessful);
     }
     
-    private static void downloadJobOutput(String jobId) throws IOException {
+    public static void downloadJobOutput(String jobId) throws IOException {
         
         GetJobOutputRequest getJobOutputRequest = new GetJobOutputRequest()
             .withVaultName(vault)
@@ -197,7 +196,7 @@ public class SNSPolling {
         System.out.println("Retrieved inventory to " + fileName);
     }
     
-    private static void cleanUp() {
+    public static void cleanUp() {
         snsClient.unsubscribe(new UnsubscribeRequest(snsSubscriptionARN));
         snsClient.deleteTopic(new DeleteTopicRequest(snsTopicARN));
         sqsClient.deleteQueue(new DeleteQueueRequest(sqsQueueURL));
