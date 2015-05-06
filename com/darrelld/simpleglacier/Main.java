@@ -43,6 +43,8 @@ public class Main {
 
     public static void main(String[] args) throws IOException {
     	
+    	scanner = new Scanner(System.in);
+    	
     	switch(args[0].toLowerCase())
     	{
     		case "list":
@@ -74,10 +76,31 @@ public class Main {
         vaultName = vaultList.get(vault).getVaultName();
         
         poll = new SNSPolling(client,vaultName,userID,Region.getRegion(Regions.values()[region]).getName(), "us-east-1", "Getiles");
-        //listArchives();
         
         upload(credentials);
 	}
+	private static void initList() throws IOException
+	{
+    	AmazonIdentityManagementClient iamClient = setupAuth();
+        
+        String userArn = iamClient.getUser().getUser().getArn();
+        String[] tokens = userArn.split(":");
+        
+        userID = tokens[4];
+        
+    	getKeys();
+        region = chooseRegion();        
+
+       client = new AmazonGlacierClient(credentials);
+        client.setEndpoint("https://glacier."+ Region.getRegion(Regions.values()[region]) +".amazonaws.com/"); 
+        
+        System.out.println("What archive do you want to upload to?");
+        vault = chooseArchive();
+        vaultName = vaultList.get(vault).getVaultName();
+        
+        poll = new SNSPolling(client,vaultName,userID,Region.getRegion(Regions.values()[region]).getName(), "us-east-1", "Getiles");
+	}
+
 
 	private static AmazonIdentityManagementClient setupAuth()
 			throws FileNotFoundException, IOException {
@@ -116,7 +139,7 @@ public class Main {
 	//Check if credentials file exists, create if not.
 	private static void getKeys() throws IOException {
 		File f = new File(userHome + "/awsCredentials.properties");
-        scanner = new Scanner(System.in);
+        
         
         if(!f.exists())
         {
@@ -208,8 +231,7 @@ public class Main {
 	{
 		//Initiate a SNS polling request
 		
-		AmazonIdentityManagementClient iamClient = setupAuth();
-		
+		initList();
         client = new AmazonGlacierClient(credentials);
         client.setEndpoint("https://glacier." + region + ".amazonaws.com");
         SNSPolling.sqsClient = new AmazonSQSClient(credentials);
