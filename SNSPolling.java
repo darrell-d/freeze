@@ -1,3 +1,5 @@
+package com.darrelld.simpleglacier;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -6,12 +8,6 @@ import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.codehaus.jackson.JsonFactory;
-import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.JsonParser;
-import org.codehaus.jackson.map.ObjectMapper;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.auth.policy.Policy;
@@ -42,6 +38,11 @@ import com.amazonaws.services.sqs.model.GetQueueAttributesResult;
 import com.amazonaws.services.sqs.model.Message;
 import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
 import com.amazonaws.services.sqs.model.SetQueueAttributesRequest;
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 
 
@@ -151,12 +152,12 @@ public class SNSPolling {
                 for (Message m : msgs) {
                     JsonParser jpMessage = factory.createJsonParser(m.getBody());
                     JsonNode jobMessageNode = mapper.readTree(jpMessage);
-                    String jobMessage = jobMessageNode.get("Message").getTextValue();
+                    String jobMessage = jobMessageNode.get("Message").textValue();
                     
                     JsonParser jpDesc = factory.createJsonParser(jobMessage);
                     JsonNode jobDescNode = mapper.readTree(jpDesc);
-                    String retrievedJobId = jobDescNode.get("JobId").getTextValue();
-                    String statusCode = jobDescNode.get("StatusCode").getTextValue();
+                    String retrievedJobId = jobDescNode.get("JobId").textValue();
+                    String statusCode = jobDescNode.get("StatusCode").textValue();
                     if (retrievedJobId.equals(jobId)) {
                         messageFound = true;
                         if (statusCode.equals("Succeeded")) {

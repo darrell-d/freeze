@@ -1,3 +1,4 @@
+package com.darrelld.simpleglacier;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -17,7 +18,6 @@ import com.amazonaws.services.glacier.transfer.UploadResult;
 import com.amazonaws.services.identitymanagement.AmazonIdentityManagementClient;
 import com.amazonaws.services.sns.AmazonSNSClient;
 import com.amazonaws.services.sqs.AmazonSQSClient;
-import com.amazonaws.auth.*;
 
 
 public class Main {
@@ -30,16 +30,31 @@ public class Main {
 	private static String userHome = System.getProperty("user.home");
 	private static String vaultName = "";
 	private static String userID = "";
-	private static String archiveToUpload = "C:\\Users\\ddefreitas\\Downloads\\mtgworks_v5.sql"; // Test file
 	private static Scanner scanner;
 	private static AmazonGlacierClient client;
 	private static List<DescribeVaultOutput> vaultList ;
 	private static SNSPolling poll;
 	private static AWSCredentials credentials;
+	
+	private static String action = "";
+	private static String archiveToUpload = ""; // Test file
     
 
     public static void main(String[] args) throws IOException {
     	
+    	switch(args[0].toLowerCase())
+    	{
+    		case "list":
+    			listArchives();
+    			break;
+    		case "upload":
+    			initUpload(args[1]);
+    	}
+    }
+
+	private static void initUpload(String filePath) throws IOException
+	{
+		archiveToUpload = filePath;
     	credentials = new PropertiesCredentials(new File(System.getProperty("user.home") + "/MyFile.properties"));
         AmazonIdentityManagementClient iamClient = new AmazonIdentityManagementClient(credentials);
         
@@ -59,11 +74,10 @@ public class Main {
         vaultName = vaultList.get(vault).getVaultName();
         
         poll = new SNSPolling(client,vaultName,userID,Region.getRegion(Regions.values()[region]).getName(), "us-east-1", "Getiles");
-        listArchives();
+        //listArchives();
         
-        //upload(credentials);
-    }
-
+        upload(credentials);
+	}
     //Print out a list of archives. Return int of selected archive
 	private static int chooseArchive() {
 		String marker = null;
@@ -215,5 +229,6 @@ public class Main {
             System.err.println(e);
         } 
 	}
+	
 	
 }
