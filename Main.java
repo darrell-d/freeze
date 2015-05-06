@@ -1,5 +1,6 @@
 package com.darrelld.simpleglacier;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
@@ -55,8 +56,7 @@ public class Main {
 	private static void initUpload(String filePath) throws IOException
 	{
 		archiveToUpload = filePath;
-    	credentials = new PropertiesCredentials(new File(System.getProperty("user.home") + "/MyFile.properties"));
-        AmazonIdentityManagementClient iamClient = new AmazonIdentityManagementClient(credentials);
+    	AmazonIdentityManagementClient iamClient = setupAuth();
         
         String userArn = iamClient.getUser().getUser().getArn();
         String[] tokens = userArn.split(":");
@@ -77,6 +77,14 @@ public class Main {
         //listArchives();
         
         upload(credentials);
+	}
+
+	private static AmazonIdentityManagementClient setupAuth()
+			throws FileNotFoundException, IOException {
+		
+		credentials = new PropertiesCredentials(new File(System.getProperty("user.home") + "/MyFile.properties"));
+        AmazonIdentityManagementClient iamClient = new AmazonIdentityManagementClient(credentials);
+		return iamClient;
 	}
     //Print out a list of archives. Return int of selected archive
 	private static int chooseArchive() {
@@ -196,12 +204,13 @@ public class Main {
 	}
 	
 	//List all existing Archives
-	private static void listArchives()
+	private static void listArchives() throws FileNotFoundException, IOException
 	{
 		//Initiate a SNS polling request
 		//TODO: You must wait to get poll information back from an archive list request. Make the poll but keep a list of known uploaded files.
 		
-
+		AmazonIdentityManagementClient iamClient = setupAuth();
+		
         client = new AmazonGlacierClient(credentials);
         client.setEndpoint("https://glacier." + region + ".amazonaws.com");
         SNSPolling.sqsClient = new AmazonSQSClient(credentials);
