@@ -3,6 +3,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
@@ -23,48 +24,73 @@ import com.amazonaws.services.sqs.AmazonSQSClient;
 
 public class Main {
 
+	private static final int _1KB = 1024;
     private static final int _1MB = 1048576;
     private static final int _1GB = 1073741824;
     
     private static int region;
     private static int vault;
+    private static int numArgs;
+    
+    private static String[] validCommands = {"upload","list"};
 	private static String userHome = System.getProperty("user.home");
 	private static String vaultName = "";
+	private static String command = "";
+	private static String filePath = "";
 	private static String userID = "";
-	private static Scanner scanner;
+	private static String userArn = "";
+	
+	private static List<String>flags = new ArrayList<String>();
+	
+	private static Scanner scanner = new Scanner(System.in);
+	
 	private static AmazonGlacierClient client;
+	
 	private static List<DescribeVaultOutput> vaultList ;
+	
 	private static SNSPolling poll;
+	
 	private static AWSCredentials credentials;
 	
-	private static String action = "";
-	private static String archiveToUpload = ""; // Test file
-    
-
+	private static AmazonIdentityManagementClient iamClient;
+	
     public static void main(String[] args) throws IOException {
+    	/*
+    	 * Expected form of arguments is 'freeze <command> /file/location -otherArgs'
+    	 * Current commands are list and upload
+    	 * -otherArgs will take the form: -arg"data" or -arg 
+    	 * */
     	
-    	scanner = new Scanner(System.in);
+    	numArgs = args.length;
+    	command = args[0];
+    	filePath = args[1];
     	
-    	switch(args[0].toLowerCase())
+    	for(int i = 2; i < args.length; i++)
+    	{
+    		flags.add(args[i]);
+    	}
+    	
+    	iamClient = getIAmClient();
+    	
+    	//Get the userID
+    	userArn = iamClient.getUser().getUser().getArn();    	
+    	String[] tokens = userArn.split(":");
+    	
+    	//ARN takes the form arn:aws:iam::12-DIGIT-USERID:user/USERNAME
+        userID = tokens[4];
+    	
+    	switch(command.toLowerCase())
     	{
     		case "list":
     			listArchives();
     			break;
     		case "upload":
-    			initUpload(args[1]);
+    			initUpload(filePath);
     	}
     }
 
 	private static void initUpload(String filePath) throws IOException
 	{
-		archiveToUpload = filePath;
-    	AmazonIdentityManagementClient iamClient = setupAuth();
-        
-        String userArn = iamClient.getUser().getUser().getArn();
-        String[] tokens = userArn.split(":");
-        
-        userID = tokens[4];
-        
     	getKeys();
         region = chooseRegion();        
 
@@ -81,7 +107,7 @@ public class Main {
 	}
 	private static void initList() throws IOException
 	{
-    	AmazonIdentityManagementClient iamClient = setupAuth();
+    	AmazonIdentityManagementClient iamClient = getIAmClient();
         
         String userArn = iamClient.getUser().getUser().getArn();
         String[] tokens = userArn.split(":");
@@ -100,14 +126,11 @@ public class Main {
         
         poll = new SNSPolling(client,vaultName,userID,Region.getRegion(Regions.values()[region]).getName(), "us-east-1", "Getiles");
 	}
-
-
-	private static AmazonIdentityManagementClient setupAuth()
+	private static AmazonIdentityManagementClient getIAmClient()
 			throws FileNotFoundException, IOException {
 		
-		credentials = new PropertiesCredentials(new File(System.getProperty("user.home") + "/MyFile.properties"));
-        AmazonIdentityManagementClient iamClient = new AmazonIdentityManagementClient(credentials);
-		return iamClient;
+		credentials = new PropertiesCredentials(new File(userHome + "/awsCredentials.properties"));
+		return  new AmazonIdentityManagementClient(credentials);
 	}
     //Print out a list of archives. Return int of selected archive
 	private static int chooseArchive() {
@@ -197,14 +220,14 @@ public class Main {
         {
             ArchiveTransferManager atm = new ArchiveTransferManager(client, credentials);
             
-            File uploadPayload = new File(archiveToUpload);
+            File uploadPayload = new File(filePath);
             System.out.println("uploading...");
             UploadResult result = atm.upload(vaultName, uploadPayload.getName(), uploadPayload);
             long filesize = uploadPayload.length();
             String modifier = "";
             if(filesize < _1MB)
             {
-            	filesize = filesize / 1024;
+            	filesize = filesize / _1KB;
             	modifier = "KB";
             }
             else if(filesize > _1MB && filesize < _1GB )
