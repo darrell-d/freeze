@@ -86,6 +86,14 @@ public class Main {
         userID = tokens[4];
         
         client = new AmazonGlacierClient(credentials);
+        
+        region = chooseRegion();        
+
+        client.setEndpoint("https://glacier."+ Region.getRegion(Regions.values()[region]) +".amazonaws.com/");
+        
+        vault = chooseArchive();
+        
+        vaultName = vaultList.get(vault).getVaultName();
     	
     	switch(command.toLowerCase())
     	{
@@ -93,25 +101,10 @@ public class Main {
     			listArchives();
     			break;
     		case "upload":
-    			initUpload(filePath);
+    			upload(credentials);;
     	}
     }
 
-	private static void initUpload(String filePath) throws IOException
-	{
-        region = chooseRegion();        
-
-       
-        client.setEndpoint("https://glacier."+ Region.getRegion(Regions.values()[region]) +".amazonaws.com/"); 
-        
-        System.out.println("What archive do you want to upload to?");
-        vault = chooseArchive();
-        vaultName = vaultList.get(vault).getVaultName();
-        
-        poll = new SNSPolling(client,vaultName,userID,Region.getRegion(Regions.values()[region]).getName(), "us-east-1", "Getiles");
-        
-        upload(credentials);
-	}
 	private static void initList() throws IOException
 	{
     	AmazonIdentityManagementClient iamClient = new AmazonIdentityManagementClient(credentials);
@@ -136,6 +129,9 @@ public class Main {
 
     //Print out a list of archives. Return int of selected archive
 	private static int chooseArchive() {
+		
+		System.out.println("Choose your archive");
+		
 		String marker = null;
 		   
 		   do
@@ -194,13 +190,12 @@ public class Main {
     private static int chooseRegion()
     {
     	int glacierRegion = -1;
-        System.out.println("Please choose the region to upload to:\r\n");
+        System.out.println("Please choose your region:\r\n");
         int counter = 0;
         //Get region
         for(Regions r : Regions.values())
         {
-        	System.out.println(counter++ + ": " +r + " " + r.getName());
-        	
+        	System.out.println(counter++ + ": " +r );
         }
         try
         {
@@ -209,12 +204,9 @@ public class Main {
         catch(NumberFormatException e)
         {
         	System.out.println("Please use numerical inputs for your region selection.");
+        	System.err.println(e);
         }
-        finally
-        {
-        	
-        }
-        System.out.println("\r\n");
+        finally{}
         return glacierRegion;
         
 
@@ -259,7 +251,6 @@ public class Main {
 	private static void listArchives() throws FileNotFoundException, IOException
 	{
 		//Initiate a SNS polling request
-		
 		initList();
         client = new AmazonGlacierClient(credentials);
         client.setEndpoint("https://glacier." + region + ".amazonaws.com");
