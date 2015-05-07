@@ -70,7 +70,13 @@ public class Main {
     		flags.add(args[i]);
     	}
     	
-    	iamClient = getIAmClient();
+    	//Setup security credentials;
+    	if(!doKeysExist())
+    	{
+    		createCredentials();
+    	}
+    	credentials = new PropertiesCredentials(new File(userHome + "/awsCredentials.properties"));
+		iamClient = new AmazonIdentityManagementClient(credentials);
     	
     	//Get the userID
     	userArn = iamClient.getUser().getUser().getArn();    	
@@ -78,6 +84,8 @@ public class Main {
     	
     	//ARN takes the form arn:aws:iam::12-DIGIT-USERID:user/USERNAME
         userID = tokens[4];
+        
+        client = new AmazonGlacierClient(credentials);
     	
     	switch(command.toLowerCase())
     	{
@@ -91,10 +99,9 @@ public class Main {
 
 	private static void initUpload(String filePath) throws IOException
 	{
-    	getKeys();
         region = chooseRegion();        
 
-       client = new AmazonGlacierClient(credentials);
+       
         client.setEndpoint("https://glacier."+ Region.getRegion(Regions.values()[region]) +".amazonaws.com/"); 
         
         System.out.println("What archive do you want to upload to?");
@@ -107,14 +114,14 @@ public class Main {
 	}
 	private static void initList() throws IOException
 	{
-    	AmazonIdentityManagementClient iamClient = getIAmClient();
+    	AmazonIdentityManagementClient iamClient = new AmazonIdentityManagementClient(credentials);
         
         String userArn = iamClient.getUser().getUser().getArn();
         String[] tokens = userArn.split(":");
         
         userID = tokens[4];
         
-    	getKeys();
+    	doKeysExist();
         region = chooseRegion();        
 
        client = new AmazonGlacierClient(credentials);
@@ -126,12 +133,7 @@ public class Main {
         
         poll = new SNSPolling(client,vaultName,userID,Region.getRegion(Regions.values()[region]).getName(), "us-east-1", "Getiles");
 	}
-	private static AmazonIdentityManagementClient getIAmClient()
-			throws FileNotFoundException, IOException {
-		
-		credentials = new PropertiesCredentials(new File(userHome + "/awsCredentials.properties"));
-		return  new AmazonIdentityManagementClient(credentials);
-	}
+
     //Print out a list of archives. Return int of selected archive
 	private static int chooseArchive() {
 		String marker = null;
@@ -160,28 +162,32 @@ public class Main {
 	}
 
 	//Check if credentials file exists, create if not.
-	private static void getKeys() throws IOException {
+	private static boolean doKeysExist() {
 		File f = new File(userHome + "/awsCredentials.properties");
         
         
         if(!f.exists())
         {
-        	
-        	System.out.print("secretKey = ");
-        	String secretKey = scanner.nextLine();
-        	System.out.print("accessKey = ");
-        	String accessKey = scanner.nextLine();
-        	
-        	FileWriter output = new FileWriter(userHome + "/awsCredentials.properties");
-        	
-        	output.write("secretKey=" + secretKey);
-        	output.write("\r\n");
-        	output.write("accessKey=" + accessKey);
-        	
-        	output.close();
-        	
-        	
+        	return false;
         }
+        
+        return true;
+	}
+	private static void createCredentials() throws IOException 
+	{
+		System.out.println("No AWS security keys found. Please enter:");
+    	System.out.print("secretKey = ");
+    	String secretKey = scanner.nextLine();
+    	System.out.print("accessKey = ");
+    	String accessKey = scanner.nextLine();
+    	
+    	FileWriter output = new FileWriter(userHome + "/awsCredentials.properties");
+    	
+    	output.write("secretKey=" + secretKey);
+    	output.write("\r\n");
+    	output.write("accessKey=" + accessKey);
+    	
+    	output.close();
 	}
     
 	//Print and choose region to upload to

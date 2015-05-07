@@ -68,6 +68,7 @@ public class SNSPolling {
 	private static String jobID;
 	
 	public static long sleepTime = 600; 
+	private static final long _10MINS = 600 * 1000;
 	
 	
 	
@@ -168,7 +169,7 @@ public class SNSPolling {
                 }
                 
             } else {
-              Thread.sleep(sleepTime * 1000); 
+              Thread.sleep(_10MINS); 
             }
           }
         return (messageFound && jobSuccessful);
