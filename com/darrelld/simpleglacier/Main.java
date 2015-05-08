@@ -67,7 +67,7 @@ public class Main {
     	
     	if(!Arrays.asList(validCommands).contains(command))
     	{
-    		throw new Error(command + " is not a valid command");
+    		throw new UnsupportedOperationException(command + " is not a valid command");
     	}
     	
     	for(int i = 2; i < args.length; i++)
@@ -111,27 +111,6 @@ public class Main {
     	}
     }
 
-	private static void initList() throws IOException
-	{
-    	AmazonIdentityManagementClient iamClient = new AmazonIdentityManagementClient(credentials);
-        
-        String userArn = iamClient.getUser().getUser().getArn();
-        String[] tokens = userArn.split(":");
-        
-        userID = tokens[4];
-        
-    	doKeysExist();
-        region = chooseRegion();        
-
-       client = new AmazonGlacierClient(credentials);
-        client.setEndpoint("https://glacier."+ Region.getRegion(Regions.values()[region]) +".amazonaws.com/"); 
-        
-        System.out.println("What archive do you want to upload to?");
-        vault = chooseArchive();
-        vaultName = vaultList.get(vault).getVaultName();
-        
-        poll = new SNSPolling(client,vaultName,userID,Region.getRegion(Regions.values()[region]).getName(), "us-east-1", "Getiles");
-	}
 
     //Print out a list of archives. Return int of selected archive
 	private static int chooseArchive() {
@@ -257,7 +236,8 @@ public class Main {
 	private static void listArchives() throws FileNotFoundException, IOException
 	{
 		//Initiate a SNS polling request
-		initList();
+		poll = new SNSPolling(client,vaultName,userID,Region.getRegion(Regions.values()[region]).getName(), "us-east-1", "Getiles");
+		
         client = new AmazonGlacierClient(credentials);
         client.setEndpoint("https://glacier." + region + ".amazonaws.com");
         SNSPolling.sqsClient = new AmazonSQSClient(credentials);
