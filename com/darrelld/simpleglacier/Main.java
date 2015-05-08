@@ -4,6 +4,7 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 
@@ -63,7 +64,11 @@ public class Main {
     	
     	numArgs = args.length;
     	command = args[0];
-    	filePath = args[1];
+    	
+    	if(!Arrays.asList(validCommands).contains(command))
+    	{
+    		throw new Error(command + " is not a valid command");
+    	}
     	
     	for(int i = 2; i < args.length; i++)
     	{
@@ -101,6 +106,7 @@ public class Main {
     			listArchives();
     			break;
     		case "upload":
+    			filePath = args[1];
     			upload(credentials);;
     	}
     }
