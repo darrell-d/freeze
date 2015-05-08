@@ -236,7 +236,7 @@ public class Main {
 	private static void listArchives() throws FileNotFoundException, IOException
 	{
 		//Initiate a SNS polling request
-		poll = new SNSPolling(client,vaultName,userID,Region.getRegion(Regions.values()[region]).getName(), "us-east-1", "Getiles");
+		poll = new SNSPolling(client,vaultName,userID,Region.getRegion(Regions.values()[region]).getName(), "us-east-1", "listFiles");
 		
         client = new AmazonGlacierClient(credentials);
         client.setEndpoint("https://glacier." + region + ".amazonaws.com");
