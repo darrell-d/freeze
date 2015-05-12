@@ -22,6 +22,8 @@ import com.amazonaws.auth.policy.Resource;
 import com.amazonaws.auth.policy.Statement;
 import com.amazonaws.auth.policy.Statement.Effect;
 import com.amazonaws.auth.policy.actions.SQSActions;
+import com.amazonaws.regions.Region;
+import com.amazonaws.regions.Regions;
 import com.amazonaws.services.glacier.model.GetJobOutputRequest;
 import com.amazonaws.services.glacier.model.GetJobOutputResult;
 import com.amazonaws.services.glacier.model.InitiateJobRequest;
@@ -58,7 +60,7 @@ public class SNSPolling {
 	private static String snsTopicName;
 	public static String snsTopicARN;
 	public static String snsSubscriptionARN;
-	public static String fileName = "filelist";
+	public static String fileName = "";
 	
 	private static String vault;
 	private String userID;
@@ -79,6 +81,7 @@ public class SNSPolling {
 		this.setSqsQueueName(queueName);
 		this.setSnsTopicName(topicName);
 		jobID = "";
+		fileName = vaultName + ":" + region;
 	
 	}
 
