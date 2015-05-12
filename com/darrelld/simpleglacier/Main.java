@@ -227,6 +227,14 @@ public class Main {
 				}
 				System.out.println(filename);
 			}
+			
+			System.out.println("\nWould you like to request a new inventory list? Y/N");
+			String result = scanner.next().toLowerCase();
+			
+			if(result.compareTo("y") == 0)
+			{
+				generateArchiveListRequest();
+			}
     	}
     	catch(Exception e)
     	{
