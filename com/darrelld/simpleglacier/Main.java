@@ -9,7 +9,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 
-import org.codehaus.jackson.map.util.JSONPObject;
+import org.apache.commons.codec.binary.Base64;
 
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.PropertiesCredentials;
@@ -34,6 +34,8 @@ public class Main {
 	private static final int _1KB = 1024;
     private static final int _1MB = 1048576;
     private static final int _1GB = 1073741824;
+    private static final int _BASE64_FIX_POSITION = 14;
+    private static final String _BASE64_STRIP_TEXT ="<m><v>2</v><p>";
     
     private static int region;
     private static int vault;
@@ -286,6 +288,7 @@ public class Main {
             System.err.println(e);
         } 
 	}
+	/*List out files which have already been retrieved from a archive list */
     private static void listArchives() throws JSONException, IOException {
 
     	String content = Helpers.readFile(SNSPolling.fileName, StandardCharsets.UTF_8);
@@ -296,7 +299,14 @@ public class Main {
 		
 		for(int i = 0; i < listLength; i++)
 		{
-			System.out.println(jsonArray.getJSONObject(i).getString("ArchiveDescription"));
+			String filename = jsonArray.getJSONObject(i).getString("ArchiveDescription");
+			//Check for a file sequence that some application uses to base64 encoding.
+			if(filename.contains(_BASE64_STRIP_TEXT))
+			{
+				filename= filename.substring(_BASE64_FIX_POSITION,filename.indexOf("</p>"));
+				filename = new String(Base64.decodeBase64(filename.getBytes()));
+			}
+			System.out.println(filename);
 		}
 		
 	}
