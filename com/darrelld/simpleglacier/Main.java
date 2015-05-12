@@ -37,7 +37,7 @@ public class Main {
     private static final int _BASE64_FIX_POSITION = 14;
     private static final String _BASE64_STRIP_TEXT ="<m><v>2</v><p>";
     
-    private static int region;
+    //private static int region;
     private static int vault;
     private static int numArgs;
     
@@ -47,21 +47,22 @@ public class Main {
 	private static String command = "";
 	private static String filePath = "";
 	private static String userID = "";
-	private static String userArn = "";
+	//private static String userArn = "";
+	private static UserAuth auth;
 	
 	private static List<String>flags = new ArrayList<String>();
 	
 	private static Scanner scanner = new Scanner(System.in);
 	
-	private static AmazonGlacierClient client;
+	//private static AmazonGlacierClient client;
 	
 	private static List<DescribeVaultOutput> vaultList ;
 	
 	private static SNSPolling poll;
 	
-	private static AWSCredentials credentials;
+	//private static AWSCredentials credentials; //TODO: remove
 	
-	private static AmazonIdentityManagementClient iamClient;
+	//private static AmazonIdentityManagementClient iamClient;
 	
     public static void main(String[] args) throws IOException {
     	/*
@@ -82,27 +83,7 @@ public class Main {
     	{
     		flags.add(args[i]);
     	}
-    	
-    	//Setup security credentials;
-    	if(!doKeysExist())
-    	{
-    		createCredentials();
-    	}
-    	credentials = new PropertiesCredentials(new File(userHome + "/awsCredentials.properties"));
-		iamClient = new AmazonIdentityManagementClient(credentials);
-    	
-    	//Get the userID
-    	userArn = iamClient.getUser().getUser().getArn();    	
-    	String[] tokens = userArn.split(":");
-    	
-    	//ARN takes the form arn:aws:iam::12-DIGIT-USERID:user/USERNAME
-        userID = tokens[4];
-        
-        client = new AmazonGlacierClient(credentials);
-        
-        region = chooseRegion();        
-
-        client.setEndpoint("https://glacier."+ Region.getRegion(Regions.values()[region]) +".amazonaws.com/");
+    	auth = new UserAuth();
         
         vault = chooseArchive();
         
@@ -110,24 +91,20 @@ public class Main {
     	
     	switch(command.toLowerCase())
     	{
+			case "upload":
+				filePath = args[1];
+				upload(auth.getCredentials());
+				break;
     		case "list":
     			if(doesFileListExist())
     			{
-    				try {
-						listArchives();
-					} catch (JSONException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
+    				listArchives();
     			}
     			else
     			{
     				generateArchiveListRequest();
     			}
     			break;
-    		case "upload":
-    			filePath = args[1];
-    			upload(credentials);;
     	}
     }
 
@@ -148,7 +125,7 @@ public class Main {
 		  		.withLimit("25")
 		  		.withMarker(marker);
 			   
-			   ListVaultsResult listVaultResults = client.listVaults(request);
+			   ListVaultsResult listVaultResults = auth.getClient().listVaults(request);
 			   
 			   vaultList = listVaultResults.getVaultList();
 			   marker = listVaultResults.getMarker();
@@ -224,7 +201,7 @@ public class Main {
 	private static void upload(AWSCredentials credentials) {
 		try 
         {
-            ArchiveTransferManager atm = new ArchiveTransferManager(client, credentials);
+            ArchiveTransferManager atm = new ArchiveTransferManager(auth.getClient(), credentials);
             
             File uploadPayload = new File(filePath);
             System.out.println("uploading...");
@@ -259,14 +236,14 @@ public class Main {
 	private static void generateArchiveListRequest() throws FileNotFoundException, IOException
 	{
 		//Initiate a SNS polling request
-		poll = new SNSPolling(client,vaultName,userID,Region.getRegion(Regions.values()[region]).getName(), "us-east-1", "listFiles");
+		poll = new SNSPolling(auth,vaultName,userID,Region.getRegion(Regions.values()[auth.getRegion()]).getName(), "us-east-1", "listFiles");
 		
-        client = new AmazonGlacierClient(credentials);
-        client.setEndpoint("https://glacier." + region + ".amazonaws.com");
-        SNSPolling.sqsClient = new AmazonSQSClient(credentials);
-        SNSPolling.sqsClient.setEndpoint("https://sqs." + Region.getRegion(Regions.values()[region])+ ".amazonaws.com");
-        SNSPolling.snsClient = new AmazonSNSClient(credentials);
-        SNSPolling.snsClient.setEndpoint("https://sns." + Region.getRegion(Regions.values()[region])+ ".amazonaws.com");
+		//auth.getClient() = new AmazonGlacierClient(credentials);
+		auth.getClient().setEndpoint("https://glacier." + Region.getRegion(Regions.values()[auth.getRegion()]) + ".amazonaws.com");
+        SNSPolling.sqsClient = new AmazonSQSClient(auth.getCredentials());
+        SNSPolling.sqsClient.setEndpoint("https://sqs." + Region.getRegion(Regions.values()[auth.getRegion()])+ ".amazonaws.com");
+        SNSPolling.snsClient = new AmazonSNSClient(auth.getCredentials());
+        SNSPolling.snsClient.setEndpoint("https://sns." + Region.getRegion(Regions.values()[auth.getRegion()])+ ".amazonaws.com");
         
         try {
             SNSPolling.setupSQS();
@@ -289,25 +266,31 @@ public class Main {
         } 
 	}
 	/*List out files which have already been retrieved from a archive list */
-    private static void listArchives() throws JSONException, IOException {
+    private static void listArchives(){
 
-    	String content = Helpers.readFile(SNSPolling.fileName, StandardCharsets.UTF_8);
-    	
-		JSONArray jsonArray = new JSONObject(content).getJSONArray("ArchiveList");
-		
-		int listLength = jsonArray.length();
-		
-		for(int i = 0; i < listLength; i++)
-		{
-			String filename = jsonArray.getJSONObject(i).getString("ArchiveDescription");
-			//Check for a file sequence that some application uses to base64 encoding.
-			if(filename.contains(_BASE64_STRIP_TEXT))
+    	try{
+	    	String content = Helpers.readFile(SNSPolling.fileName, StandardCharsets.UTF_8);
+	    	
+			JSONArray jsonArray = new JSONObject(content).getJSONArray("ArchiveList");
+			
+			int listLength = jsonArray.length();
+			
+			for(int i = 0; i < listLength; i++)
 			{
-				filename= filename.substring(_BASE64_FIX_POSITION,filename.indexOf("</p>"));
-				filename = new String(Base64.decodeBase64(filename.getBytes()));
+				String filename = jsonArray.getJSONObject(i).getString("ArchiveDescription");
+				//Check for a file sequence that some application uses to base64 encoding.
+				if(filename.contains(_BASE64_STRIP_TEXT))
+				{
+					filename= filename.substring(_BASE64_FIX_POSITION,filename.indexOf("</p>"));
+					filename = new String(Base64.decodeBase64(filename.getBytes()));
+				}
+				System.out.println(filename);
 			}
-			System.out.println(filename);
-		}
+    	}
+    	catch(Exception e)
+    	{
+    		e.printStackTrace();
+    	}
 		
 	}
 	

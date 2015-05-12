@@ -49,8 +49,7 @@ import com.amazonaws.services.sqs.model.SetQueueAttributesRequest;
 
 public class SNSPolling {
 	
-	private static AmazonGlacierClient client;
-	
+	private static UserAuth userAuth;
 	public static AmazonSQSClient sqsClient;
 	public static AmazonSNSClient snsClient;
 	
@@ -72,8 +71,8 @@ public class SNSPolling {
 	
 	
 	
-	public SNSPolling(AmazonGlacierClient client, String vaultName, String userID, String region, String queueName,String topicName) {
-		this.client = client;
+	public SNSPolling(UserAuth auth, String vaultName, String userID, String region, String queueName,String topicName) {
+		userAuth = auth;
 		this.vault = vaultName;
 		this.userID = userID;
 		this.region = region;
@@ -94,7 +93,7 @@ public class SNSPolling {
             .withVaultName(vault)
             .withJobParameters(jobParameters);
         
-        InitiateJobResult response = client.initiateJob(request);
+        InitiateJobResult response = userAuth.getClient().initiateJob(request);
         return response.getJobId();
     }
 	
@@ -180,7 +179,7 @@ public class SNSPolling {
         GetJobOutputRequest getJobOutputRequest = new GetJobOutputRequest()
             .withVaultName(vault)
             .withJobId(jobId);
-        GetJobOutputResult getJobOutputResult = client.getJobOutput(getJobOutputRequest);
+        GetJobOutputResult getJobOutputResult = userAuth.getClient().getJobOutput(getJobOutputRequest);
     
         FileWriter fstream = new FileWriter(fileName);
         BufferedWriter out = new BufferedWriter(fstream);
@@ -211,7 +210,7 @@ public class SNSPolling {
 		GetJobOutputRequest jobOutputRequest = new GetJobOutputRequest()
         .withVaultName(vault)
         .withJobId(jobID);
-		GetJobOutputResult jobOutputResult = client.getJobOutput(jobOutputRequest);
+		GetJobOutputResult jobOutputResult = userAuth.getClient().getJobOutput(jobOutputRequest);
 		jobOutputResult.getBody();
 	}
 	
