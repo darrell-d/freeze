@@ -60,7 +60,7 @@ public class SNSPolling {
 	public static String snsTopicName;
 	public static String snsTopicARN;
 	public static String snsSubscriptionARN;
-	public static String fileName = "jobOutput.txt";
+	public static String fileName = "filelist";
 	
 	private static String vault;
 	private static String userID;
