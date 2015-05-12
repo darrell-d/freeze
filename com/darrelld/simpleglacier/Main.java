@@ -58,6 +58,9 @@ public class Main {
     	 * Current commands are list and upload
     	 * -otherArgs will take the form: -arg"data" or -arg 
     	 * */
+    	
+    	numArgs = args.length;
+    	
     	if(numArgs == 0)
     	{
     		
@@ -68,7 +71,7 @@ public class Main {
     		System.out.println(instructions);
     		return;
     	}
-    	numArgs = args.length;
+    	
     	command = args[0];
     	
     	if(!Arrays.asList(validCommands).contains(command))
