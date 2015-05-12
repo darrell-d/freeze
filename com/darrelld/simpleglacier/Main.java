@@ -3,10 +3,13 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
+
+import org.codehaus.jackson.map.util.JSONPObject;
 
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.PropertiesCredentials;
@@ -21,6 +24,9 @@ import com.amazonaws.services.glacier.transfer.UploadResult;
 import com.amazonaws.services.identitymanagement.AmazonIdentityManagementClient;
 import com.amazonaws.services.sns.AmazonSNSClient;
 import com.amazonaws.services.sqs.AmazonSQSClient;
+import com.amazonaws.util.json.JSONArray;
+import com.amazonaws.util.json.JSONException;
+import com.amazonaws.util.json.JSONObject;
 
 
 public class Main {
@@ -103,7 +109,19 @@ public class Main {
     	switch(command.toLowerCase())
     	{
     		case "list":
-    			listArchives();
+    			if(doesFileListExist())
+    			{
+    				try {
+						listArchives();
+					} catch (JSONException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+    			}
+    			else
+    			{
+    				generateArchiveListRequest();
+    			}
     			break;
     		case "upload":
     			filePath = args[1];
@@ -112,7 +130,10 @@ public class Main {
     }
 
 
-    //Print out a list of archives. Return int of selected archive
+
+
+
+	//Print out a list of archives. Return int of selected archive
 	private static int chooseArchive() {
 		
 		System.out.println("Choose your archive");
@@ -233,7 +254,7 @@ public class Main {
 	}
 	
 	//List all existing Archives
-	private static void listArchives() throws FileNotFoundException, IOException
+	private static void generateArchiveListRequest() throws FileNotFoundException, IOException
 	{
 		//Initiate a SNS polling request
 		poll = new SNSPolling(client,vaultName,userID,Region.getRegion(Regions.values()[region]).getName(), "us-east-1", "listFiles");
@@ -265,6 +286,28 @@ public class Main {
             System.err.println(e);
         } 
 	}
+    private static void listArchives() throws JSONException, IOException {
+
+    	String content = Helpers.readFile(SNSPolling.fileName, StandardCharsets.UTF_8);
+    	
+		JSONArray jsonArray = new JSONObject(content).getJSONArray("ArchiveList");
+		
+		int listLength = jsonArray.length();
+		
+		for(int i = 0; i < listLength; i++)
+		{
+			System.out.println(jsonArray.getJSONObject(i).getString("ArchiveDescription"));
+		}
+		
+	}
+	
+	private static boolean doesFileListExist()
+	{
+		File f = new File(SNSPolling.fileName);
+		
+		return f.exists();
+	}
+	
 	
 	
 }
