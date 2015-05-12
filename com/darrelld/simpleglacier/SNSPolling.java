@@ -22,7 +22,6 @@ import com.amazonaws.auth.policy.Resource;
 import com.amazonaws.auth.policy.Statement;
 import com.amazonaws.auth.policy.Statement.Effect;
 import com.amazonaws.auth.policy.actions.SQSActions;
-import com.amazonaws.services.glacier.AmazonGlacierClient;
 import com.amazonaws.services.glacier.model.GetJobOutputRequest;
 import com.amazonaws.services.glacier.model.GetJobOutputResult;
 import com.amazonaws.services.glacier.model.InitiateJobRequest;
@@ -55,15 +54,16 @@ public class SNSPolling {
 	
 	public static String sqsQueueARN;	
 	public static String sqsQueueURL;
-	public static String sqsQueueName;
-	public static String snsTopicName;
+	private static String sqsQueueName;
+	private static String snsTopicName;
 	public static String snsTopicARN;
 	public static String snsSubscriptionARN;
 	public static String fileName = "filelist";
 	
 	private static String vault;
-	private static String userID;
-	private static String region;
+	private String userID;
+	private String region;
+
 	private static String jobID;
 	
 	public static long sleepTime = 600; 
@@ -73,11 +73,11 @@ public class SNSPolling {
 	
 	public SNSPolling(UserAuth auth, String vaultName, String userID, String region, String queueName,String topicName) {
 		userAuth = auth;
-		this.vault = vaultName;
-		this.userID = userID;
-		this.region = region;
-		this.sqsQueueName = queueName;
-		this.snsTopicName = topicName;
+		this.setVault(vaultName);
+		this.setUserID(userID);
+		this.setRegion(region);
+		this.setSqsQueueName(queueName);
+		this.setSnsTopicName(topicName);
 		jobID = "";
 	
 	}
@@ -90,7 +90,7 @@ public class SNSPolling {
             .withSNSTopic(snsTopicARN);
         
         InitiateJobRequest request = new InitiateJobRequest()
-            .withVaultName(vault)
+            .withVaultName(getVault())
             .withJobParameters(jobParameters);
         
         InitiateJobResult response = userAuth.getClient().initiateJob(request);
@@ -99,7 +99,7 @@ public class SNSPolling {
 	
 	public static void setupSQS() {
 	        CreateQueueRequest request = new CreateQueueRequest()
-	            .withQueueName(sqsQueueName);
+	            .withQueueName(getSqsQueueName());
 	        CreateQueueResult result = sqsClient.createQueue(request);  
 	        sqsQueueURL = result.getQueueUrl();
 	                
@@ -124,7 +124,7 @@ public class SNSPolling {
 	
 	public static void setupSNS() {
         CreateTopicRequest request = new CreateTopicRequest()
-            .withName(snsTopicName);
+            .withName(getSnsTopicName());
         CreateTopicResult result = snsClient.createTopic(request);
         snsTopicARN = result.getTopicArn();
 
@@ -177,7 +177,7 @@ public class SNSPolling {
     public static void downloadJobOutput(String jobId) throws IOException {
         
         GetJobOutputRequest getJobOutputRequest = new GetJobOutputRequest()
-            .withVaultName(vault)
+            .withVaultName(getVault())
             .withJobId(jobId);
         GetJobOutputResult getJobOutputResult = userAuth.getClient().getJobOutput(getJobOutputRequest);
     
@@ -208,10 +208,50 @@ public class SNSPolling {
 	public void getResults()
 	{
 		GetJobOutputRequest jobOutputRequest = new GetJobOutputRequest()
-        .withVaultName(vault)
+        .withVaultName(getVault())
         .withJobId(jobID);
 		GetJobOutputResult jobOutputResult = userAuth.getClient().getJobOutput(jobOutputRequest);
 		jobOutputResult.getBody();
+	}
+
+	public String getUserID() {
+		return userID;
+	}
+
+	public void setUserID(String userID) {
+		this.userID = userID;
+	}
+
+	public String getRegion() {
+		return region;
+	}
+
+	public void setRegion(String region) {
+		this.region = region;
+	}
+
+	public static String getVault() {
+		return vault;
+	}
+
+	public void setVault(String vault) {
+		SNSPolling.vault = vault;
+	}
+
+	public static String getSqsQueueName() {
+		return sqsQueueName;
+	}
+
+	public void setSqsQueueName(String sqsQueueName) {
+		SNSPolling.sqsQueueName = sqsQueueName;
+	}
+
+	public static String getSnsTopicName() {
+		return snsTopicName;
+	}
+
+	public void setSnsTopicName(String snsTopicName) {
+		SNSPolling.snsTopicName = snsTopicName;
 	}
 	
 	

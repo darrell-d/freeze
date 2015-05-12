@@ -1,8 +1,8 @@
 package com.darrelld.simpleglacier;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -12,20 +12,16 @@ import java.util.Scanner;
 import org.apache.commons.codec.binary.Base64;
 
 import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.auth.PropertiesCredentials;
 import com.amazonaws.regions.Region;
 import com.amazonaws.regions.Regions;
-import com.amazonaws.services.glacier.AmazonGlacierClient;
 import com.amazonaws.services.glacier.model.DescribeVaultOutput;
 import com.amazonaws.services.glacier.model.ListVaultsRequest;
 import com.amazonaws.services.glacier.model.ListVaultsResult;
 import com.amazonaws.services.glacier.transfer.ArchiveTransferManager;
 import com.amazonaws.services.glacier.transfer.UploadResult;
-import com.amazonaws.services.identitymanagement.AmazonIdentityManagementClient;
 import com.amazonaws.services.sns.AmazonSNSClient;
 import com.amazonaws.services.sqs.AmazonSQSClient;
 import com.amazonaws.util.json.JSONArray;
-import com.amazonaws.util.json.JSONException;
 import com.amazonaws.util.json.JSONObject;
 
 
@@ -37,32 +33,24 @@ public class Main {
     private static final int _BASE64_FIX_POSITION = 14;
     private static final String _BASE64_STRIP_TEXT ="<m><v>2</v><p>";
     
-    //private static int region;
     private static int vault;
     private static int numArgs;
     
     private static String[] validCommands = {"upload","list"};
-	private static String userHome = System.getProperty("user.home");
 	private static String vaultName = "";
 	private static String command = "";
 	private static String filePath = "";
 	private static String userID = "";
-	//private static String userArn = "";
 	private static UserAuth auth;
 	
 	private static List<String>flags = new ArrayList<String>();
 	
 	private static Scanner scanner = new Scanner(System.in);
 	
-	//private static AmazonGlacierClient client;
 	
 	private static List<DescribeVaultOutput> vaultList ;
 	
 	private static SNSPolling poll;
-	
-	//private static AWSCredentials credentials; //TODO: remove
-	
-	//private static AmazonIdentityManagementClient iamClient;
 	
     public static void main(String[] args) throws IOException {
     	/*
@@ -70,7 +58,16 @@ public class Main {
     	 * Current commands are list and upload
     	 * -otherArgs will take the form: -arg"data" or -arg 
     	 * */
-    	
+    	if(numArgs == 0)
+    	{
+    		
+    		URL classURL = Main.class.getResource("instructions");
+    		String path = classURL.getPath();
+    		path = path.substring(1,path.length());
+    		String instructions = Helpers.readFile(path, StandardCharsets.UTF_8);
+    		System.out.println(instructions);
+    		return;
+    	}
     	numArgs = args.length;
     	command = args[0];
     	
@@ -108,10 +105,6 @@ public class Main {
     	}
     }
 
-
-
-
-
 	//Print out a list of archives. Return int of selected archive
 	private static int chooseArchive() {
 		
@@ -142,62 +135,7 @@ public class Main {
 		   return scanner.nextInt();
 	}
 
-	//Check if credentials file exists, create if not.
-	private static boolean doKeysExist() {
-		File f = new File(userHome + "/awsCredentials.properties");
-        
-        
-        if(!f.exists())
-        {
-        	return false;
-        }
-        
-        return true;
-	}
-	private static void createCredentials() throws IOException 
-	{
-		System.out.println("No AWS security keys found. Please enter:");
-    	System.out.print("secretKey = ");
-    	String secretKey = scanner.nextLine();
-    	System.out.print("accessKey = ");
-    	String accessKey = scanner.nextLine();
-    	
-    	FileWriter output = new FileWriter(userHome + "/awsCredentials.properties");
-    	
-    	output.write("secretKey=" + secretKey);
-    	output.write("\r\n");
-    	output.write("accessKey=" + accessKey);
-    	
-    	output.close();
-	}
-    
-	//Print and choose region to upload to
-    private static int chooseRegion()
-    {
-    	int glacierRegion = -1;
-        System.out.println("Please choose your region:\r\n");
-        int counter = 0;
-        //Get region
-        for(Regions r : Regions.values())
-        {
-        	System.out.println(counter++ + ": " +r );
-        }
-        try
-        {
-        	glacierRegion = scanner.nextInt();
-        }
-        catch(NumberFormatException e)
-        {
-        	System.out.println("Please use numerical inputs for your region selection.");
-        	System.err.println(e);
-        }
-        finally{}
-        return glacierRegion;
-        
-
-    }
-    
-    //Upload file to Glacier
+	//Upload file to Glacier
 	private static void upload(AWSCredentials credentials) {
 		try 
         {
@@ -236,7 +174,7 @@ public class Main {
 	private static void generateArchiveListRequest() throws FileNotFoundException, IOException
 	{
 		//Initiate a SNS polling request
-		poll = new SNSPolling(auth,vaultName,userID,Region.getRegion(Regions.values()[auth.getRegion()]).getName(), "us-east-1", "listFiles");
+		setPoll(new SNSPolling(auth,vaultName,userID,Region.getRegion(Regions.values()[auth.getRegion()]).getName(), "us-east-1", "listFiles"));
 		
 		//auth.getClient() = new AmazonGlacierClient(credentials);
 		auth.getClient().setEndpoint("https://glacier." + Region.getRegion(Regions.values()[auth.getRegion()]) + ".amazonaws.com");
@@ -299,6 +237,14 @@ public class Main {
 		File f = new File(SNSPolling.fileName);
 		
 		return f.exists();
+	}
+
+	public static SNSPolling getPoll() {
+		return poll;
+	}
+
+	public static void setPoll(SNSPolling poll) {
+		Main.poll = poll;
 	}
 	
 	

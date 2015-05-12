@@ -1,0 +1,4 @@
+No arguments passed
+Expected form of arguments is 'freeze <command> /file/location -otherArgs'
+Current commands are list and upload
+-otherArgs will take the form: -arg"data" or -arg 
