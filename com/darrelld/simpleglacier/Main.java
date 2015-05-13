@@ -196,7 +196,7 @@ public class Main {
             
             Boolean success = SNSPolling.waitForJobToComplete(jobId, SNSPolling.sqsQueueURL);
             if (!success) { throw new Exception("Job did not complete successfully."); }
-            
+            System.out.println("Staring download");
             SNSPolling.downloadJobOutput(jobId);
             
             SNSPolling.cleanUp();

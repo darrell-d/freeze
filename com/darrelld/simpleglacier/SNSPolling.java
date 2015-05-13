@@ -68,8 +68,8 @@ public class SNSPolling {
 
 	private static String jobID;
 	
-	public static long sleepTime = 600; 
-	private static final long _10MINS = 600 * 1000;
+	public static final long _SLEEPTIME = 600; 
+	private static final long _10MINS = _SLEEPTIME * 1000;
 	
 	
 	
@@ -153,6 +153,7 @@ public class SNSPolling {
                new ReceiveMessageRequest(sqsQueueUrl).withMaxNumberOfMessages(10)).getMessages();
 
             if (msgs.size() > 0) {
+            	System.out.println(msgs.size() + "message recieved");
                 for (Message m : msgs) {
                     JsonParser jpMessage = factory.createJsonParser(m.getBody());
                     JsonNode jobMessageNode = mapper.readTree(jpMessage);
@@ -166,6 +167,7 @@ public class SNSPolling {
                         messageFound = true;
                         if (statusCode.equals("Succeeded")) {
                             jobSuccessful = true;
+                            System.out.println("jobSucessful");
                         }
                     }
                 }
@@ -174,15 +176,17 @@ public class SNSPolling {
               Thread.sleep(_10MINS); 
             }
           }
+        System.out.println("messageFound && JobSuccessful  = " + messageFound + " " + jobSuccessful );
         return (messageFound && jobSuccessful);
     }
     
     public static void downloadJobOutput(String jobId) throws IOException {
-        
+    	System.out.println("Start");
         GetJobOutputRequest getJobOutputRequest = new GetJobOutputRequest()
             .withVaultName(getVault())
             .withJobId(jobId);
         GetJobOutputResult getJobOutputResult = userAuth.getClient().getJobOutput(getJobOutputRequest);
+        System.out.println("1");
     
         FileWriter fstream = new FileWriter(fileName);
         BufferedWriter out = new BufferedWriter(fstream);
