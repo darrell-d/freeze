@@ -36,7 +36,7 @@ public class Main {
     private static int vault;
     private static int numArgs;
     
-    private static String[] validCommands = {"upload","list"};
+    private static String[] validCommands = {"upload","list", "version"};
 	private static String vaultName = "";
 	private static String command = "";
 	private static String filePath = "";
@@ -72,6 +72,7 @@ public class Main {
     		return;
     	}
     	
+    	
     	command = args[0];
     	
     	if(!Arrays.asList(validCommands).contains(command))
@@ -104,6 +105,9 @@ public class Main {
     			{
     				generateArchiveListRequest();
     			}
+    			break;
+    		case "version":
+    			Helpers.printVersion();
     			break;
     	}
     }
