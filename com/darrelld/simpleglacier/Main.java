@@ -54,7 +54,7 @@ public class Main {
 	
     public static void main(String[] args) throws IOException {
     	/*
-    	 * Expected form of arguments is 'freeze <command> /file/location -otherArgs'
+    	 * Expected form of arguments is 'freeze ([command]?[fileLocation]|[-otherArgs]?)
     	 * Current commands are list and upload
     	 * -otherArgs will take the form: -arg"data" or -arg 
     	 * */

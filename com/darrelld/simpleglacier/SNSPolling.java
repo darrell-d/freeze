@@ -153,7 +153,6 @@ public class SNSPolling {
                new ReceiveMessageRequest(sqsQueueUrl).withMaxNumberOfMessages(10)).getMessages();
 
             if (msgs.size() > 0) {
-            	System.out.println(msgs.size() + "message recieved");
                 for (Message m : msgs) {
                     JsonParser jpMessage = factory.createJsonParser(m.getBody());
                     JsonNode jobMessageNode = mapper.readTree(jpMessage);
@@ -167,7 +166,6 @@ public class SNSPolling {
                         messageFound = true;
                         if (statusCode.equals("Succeeded")) {
                             jobSuccessful = true;
-                            System.out.println("jobSucessful");
                         }
                     }
                 }
@@ -176,7 +174,6 @@ public class SNSPolling {
               Thread.sleep(_10MINS); 
             }
           }
-        System.out.println("messageFound && JobSuccessful  = " + messageFound + " " + jobSuccessful );
         return (messageFound && jobSuccessful);
     }
     

@@ -1,4 +1,4 @@
 No arguments passed
-Expected form of arguments is 'freeze <command> /file/location -otherArgs'
+Expected form of arguments is 'freeze ([command]?[fileLocation])
 Current commands are list and upload
--otherArgs will take the form: -arg"data" or -arg 
+-otherArgs will take the form: -arg"data" or -arg when they get added
