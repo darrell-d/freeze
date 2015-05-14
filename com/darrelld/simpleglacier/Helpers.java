@@ -17,7 +17,7 @@ public class Helpers {
 
 	//Print current version
 	public static void printVersion() {
-		System.out.println(_VERSION);
+		System.out.println("freeze " + _VERSION);
 		
 	}
 	

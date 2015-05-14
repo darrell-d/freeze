@@ -84,33 +84,32 @@ public class Main {
     	{
     		flags.add(args[i]);
     	}
-    	auth = new UserAuth();
-        
-        vault = chooseArchive();
-        
-        vaultName = vaultList.get(vault).getVaultName();
     	
     	switch(command.toLowerCase())
     	{
 			case "upload":
 				filePath = args[1];
+				authorize();
 				upload(auth.getCredentials());
 				break;
     		case "list":
-    			if(doesFileListExist())
-    			{
-    				listArchives();
-    			}
-    			else
-    			{
-    				generateArchiveListRequest();
-    			}
+    			authorize();
+    			list();
     			break;
     		case "version":
     			Helpers.printVersion();
     			break;
     	}
     }
+
+	private static void authorize() throws FileNotFoundException {
+		auth = new UserAuth();
+        
+        vault = chooseArchive();
+        
+        vaultName = vaultList.get(vault).getVaultName();
+	}
+
 
 	//Print out a list of archives. Return int of selected archive
 	private static int chooseArchive() {
@@ -175,6 +174,17 @@ public class Main {
         {
             System.err.println(e);
         }
+	}
+	
+	private static void list() throws FileNotFoundException, IOException {
+		if(doesFileListExist())
+		{
+			listArchives();
+		}
+		else
+		{
+			generateArchiveListRequest();
+		}
 	}
 	
 	//List all existing Archives
