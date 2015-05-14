@@ -64,11 +64,15 @@ public class Main {
     	if(numArgs == 0)
     	{
     		
-    		URL classURL = Main.class.getResource("instructions");
+    		/*URL classURL = Main.class.getResource("instructions");
     		String path = classURL.getPath();
     		path = path.substring(1,path.length());
-    		String instructions = Helpers.readFile(path, StandardCharsets.UTF_8);
-    		System.out.println(instructions);
+    		System.out.println(path);
+    		String instructions = Helpers.readFile(path, StandardCharsets.UTF_8);*/
+    		System.out.println(
+    				"No arguments passed Expected form of arguments is 'freeze ([command]?[fileLocation]) \r\n" +
+    				"Current commands are list and upload \r\n" +
+    				"-otherArgs will take the form: -arg\"data\" or -arg when they get added \r\n");
     		return;
     	}
     	
