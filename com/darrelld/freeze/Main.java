@@ -3,10 +3,16 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Scanner;
+import java.util.TimeZone;
 
 import org.apache.commons.codec.binary.Base64;
 
@@ -51,7 +57,7 @@ public class Main {
 	
 	private static SNSPolling poll;
 	
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, ParseException {
     	/*
     	 * Expected form of arguments is 'freeze ([command]?[fileLocation]|[-otherArgs]?)
     	 * Current commands are list and upload
@@ -228,6 +234,17 @@ public class Main {
 	    	String content = Helpers.readFile(SNSPolling.fileName, StandardCharsets.UTF_8);
 	    	
 			JSONArray jsonArray = new JSONObject(content).getJSONArray("ArchiveList");
+			String inventoryDate_RAW = new JSONObject(content).getString("InventoryDate");
+			HashMap<String,String>timeData = new HashMap<>();
+			String timezone = "EST";
+			
+			timeData.put("inputFormat", "yyyy-MM-dd'T'HH:mm:ss'Z'");
+			timeData.put("inputTimeZone", "UTC");
+			timeData.put("outputFormat", "yyyy-MM-dd HH:mm:ss");
+			timeData.put("outputTimeZone", timezone);
+			timeData.put("payload", inventoryDate_RAW);
+			
+			String inventoryDate = Helpers.parseZuluTime(timeData);
 			
 			int listLength = jsonArray.length();
 			
@@ -243,7 +260,7 @@ public class Main {
 				System.out.println(filename);
 			}
 			
-			System.out.println("\nWould you like to request a new inventory list? Y/N");
+			System.out.println("\nInventory last updated " + inventoryDate + " " + timezone + ", would you like to update? Y/N");
 			String result = scanner.next().toLowerCase();
 			
 			if(result.compareTo("y") == 0)
