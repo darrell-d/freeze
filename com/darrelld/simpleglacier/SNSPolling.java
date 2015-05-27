@@ -176,12 +176,11 @@ public class SNSPolling {
     }
     
     public static void downloadJobOutput(String jobId) throws IOException {
-    	System.out.println("Start");
+
         GetJobOutputRequest getJobOutputRequest = new GetJobOutputRequest()
             .withVaultName(getVault())
             .withJobId(jobId);
         GetJobOutputResult getJobOutputResult = userAuth.getClient().getJobOutput(getJobOutputRequest);
-        System.out.println("1");
     
         FileWriter fstream = new FileWriter(fileName);
         BufferedWriter out = new BufferedWriter(fstream);

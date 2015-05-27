@@ -2,7 +2,6 @@ package com.darrelld.simpleglacier;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -214,7 +213,6 @@ public class Main {
             
             Boolean success = SNSPolling.waitForJobToComplete(jobId, SNSPolling.sqsQueueURL);
             if (!success) { throw new Exception("Job did not complete successfully."); }
-            System.out.println("Staring download");
             SNSPolling.downloadJobOutput(jobId);
             
             SNSPolling.cleanUp();
