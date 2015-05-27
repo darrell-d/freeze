@@ -79,7 +79,7 @@ public class SNSPolling {
 		this.setSqsQueueName(queueName);
 		this.setSnsTopicName(topicName);
 		jobID = "";
-		fileName = vaultName + ":" + region;
+		fileName = vaultName + "__" + region;
 	
 	}
 

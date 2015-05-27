@@ -180,6 +180,8 @@ public class Main {
 	}
 	
 	private static void list() throws FileNotFoundException, IOException {
+		//Initiate a SNS polling request
+		setPoll(new SNSPolling(auth,vaultName,userID,Region.getRegion(Regions.values()[auth.getRegion()]).getName(), "us-east-1", "listFiles"));
 		if(doesFileListExist())
 		{
 			listArchives();
@@ -192,10 +194,7 @@ public class Main {
 	
 	//List all existing Archives
 	private static void generateArchiveListRequest() throws FileNotFoundException, IOException
-	{
-		//Initiate a SNS polling request
-		setPoll(new SNSPolling(auth,vaultName,userID,Region.getRegion(Regions.values()[auth.getRegion()]).getName(), "us-east-1", "listFiles"));
-		
+	{		
 		//auth.getClient() = new AmazonGlacierClient(credentials);
 		auth.getClient().setEndpoint("https://glacier." + Region.getRegion(Regions.values()[auth.getRegion()]) + ".amazonaws.com");
         SNSPolling.sqsClient = new AmazonSQSClient(auth.getCredentials());
