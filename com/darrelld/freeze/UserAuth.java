@@ -1,4 +1,4 @@
-package com.darrelld.simpleglacier;
+package com.darrelld.freeze;
 
 import java.io.File;
 import java.io.FileNotFoundException;

@@ -1,4 +1,4 @@
-package com.darrelld.simpleglacier;
+package com.darrelld.freeze;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
