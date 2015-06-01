@@ -37,7 +37,7 @@ public class Main {
     private static int vault;
     private static int numArgs;
     
-    private static String[] validCommands = {"upload","list", "version"};
+    private static String[] validCommands = {"upload","list", "download", "version"};
 	private static String vaultName = "";
 	private static String command = "";
 	private static String filePath = "";
@@ -96,6 +96,10 @@ public class Main {
 				filePath = args[1];
 				authorize();
 				upload(auth.getCredentials());
+				break;
+			case "download":
+				String getFile = args[1];
+				download(getFile);
 				break;
     		case "list":
     			authorize();
@@ -284,6 +288,11 @@ public class Main {
 
 	public static void setPoll(SNSPolling poll) {
 		Main.poll = poll;
+	}
+	
+	private static void download(String file)
+	{
+		
 	}
 	
 	
