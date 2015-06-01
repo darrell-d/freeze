@@ -95,11 +95,11 @@ public class Main {
 			case "upload":
 				filePath = args[1];
 				authorize();
-				upload(auth.getCredentials());
+				upload();
 				break;
 			case "download":
 				String getFile = args[1];
-				download(getFile);
+				download(auth.getCredentials(),getFile);
 				break;
     		case "list":
     			authorize();
@@ -151,10 +151,10 @@ public class Main {
 	}
 
 	//Upload file to Glacier
-	private static void upload(AWSCredentials credentials) {
+	private static void upload() {
 		try 
         {
-            ArchiveTransferManager atm = new ArchiveTransferManager(auth.getClient(), credentials);
+            ArchiveTransferManager atm = new ArchiveTransferManager(auth.getClient(), auth.getCredentials());
             
             File uploadPayload = new File(filePath);
             System.out.println("uploading...");
@@ -184,6 +184,13 @@ public class Main {
             System.err.println(e);
         }
 	}
+	
+	private static void download(AWSCredentials credentials, String file)
+	{
+		ArchiveTransferManager atm = new ArchiveTransferManager(auth.getClient(), auth.getCredentials());
+		//atm.download(vaultName, archiveId, new File())
+	}
+	
 	
 	private static void list() throws FileNotFoundException, IOException {
 		//Initiate a SNS polling request
@@ -288,11 +295,6 @@ public class Main {
 
 	public static void setPoll(SNSPolling poll) {
 		Main.poll = poll;
-	}
-	
-	private static void download(String file)
-	{
-		
 	}
 	
 	
