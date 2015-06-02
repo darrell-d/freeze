@@ -57,7 +57,7 @@ public class Helpers {
 	}
 	public static String parseZuluTime(Map<String, String> timeData)
 	{
-		DateFormat dateFormat = null;
+		DateFormat dateFormat = new SimpleDateFormat();
 		Date date = new Date(0);
 		try
 		{
@@ -69,7 +69,7 @@ public class Helpers {
 			dateFormat = new SimpleDateFormat(timeData.get("outputFormat"));
 			dateFormat.setTimeZone(TimeZone.getTimeZone(timeData.get("outputTimeZone")));
 		}
-		catch (java.text.ParseException e) 
+		catch (Exception e) 
 		{
 			e.printStackTrace();
 		}
