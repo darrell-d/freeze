@@ -125,7 +125,6 @@ public class Helpers {
 			h.put(key, payload);
 			
 		}
-		System.out.println(h.get("327bc240a670c89b8b301177e741496d92108666906900455e123fa780fcf35a").get(0));
 		
 		return h;
 	}
