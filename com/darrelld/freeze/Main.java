@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Scanner;
 
 import org.apache.commons.codec.binary.Base64;
@@ -98,8 +100,9 @@ public class Main {
 				upload();
 				break;
 			case "download":
-				String getFile = args[1];
-				download(auth.getCredentials(),getFile);
+				authorize();
+				String id = args[1];
+				download(id);
 				break;
     		case "list":
     			authorize();
@@ -185,10 +188,26 @@ public class Main {
         }
 	}
 	
-	private static void download(AWSCredentials credentials, String file)
+	private static void download(String id)
 	{
 		ArchiveTransferManager atm = new ArchiveTransferManager(auth.getClient(), auth.getCredentials());
-		//atm.download(vaultName, archiveId, new File())
+		HashMap<String,ArrayList<String>> fileHash = Helpers.createFileHash(vaultName, Region.getRegion(Regions.values()[auth.getRegion()]).getName());
+		
+		for (Entry<String, ArrayList<String>> e : fileHash.entrySet()) 
+		{
+			//TODO: Fix getting key.
+			String s = e.getKey();
+			if (e.getKey().startsWith(id))
+			{
+				String archiveId = fileHash.get(e.getKey()).get(0);
+				atm.download(vaultName, archiveId, new File("/freeze-downloads/" + fileHash.get(e.getKey()).get(1)));
+			}
+			else
+			{
+				System.out.println("No ID found. Please enter a new ID");
+				download(scanner.next());
+			}
+		}
 	}
 	
 	
