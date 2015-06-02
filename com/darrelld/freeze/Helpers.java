@@ -58,7 +58,7 @@ public class Helpers {
 	public static String parseZuluTime(Map<String, String> timeData)
 	{
 		DateFormat dateFormat = null;
-		Date date = null;
+		Date date = new Date(0);
 		try
 		{
 			DateFormat utcFormat = new SimpleDateFormat(timeData.get("inputFormat"));
@@ -105,25 +105,31 @@ public class Helpers {
 		}
 		
 		
-		
-		for(int i = 0; i < jsonArray.length(); i ++)
+		try
 		{
-			try 
+			for(int i = 0; i < jsonArray.length(); i ++)
 			{
-				key = jsonArray.getJSONObject(i).getString("SHA256TreeHash");
-	
-				payload.add(jsonArray.getJSONObject(i).getString("ArchiveId"));
-				payload.add(jsonArray.getJSONObject(i).getString("ArchiveDescription"));
-				payload.add(jsonArray.getJSONObject(i).getString("CreationDate"));
-				payload.add(jsonArray.getJSONObject(i).getString("Size"));
-				payload.add(jsonArray.getJSONObject(i).getString("SHA256TreeHash"));
-			} 
-			catch (JSONException e) 
-			{
-				e.printStackTrace();
+				try 
+				{
+					key = jsonArray.getJSONObject(i).getString("SHA256TreeHash");
+		
+					payload.add(jsonArray.getJSONObject(i).getString("ArchiveId"));
+					payload.add(jsonArray.getJSONObject(i).getString("ArchiveDescription"));
+					payload.add(jsonArray.getJSONObject(i).getString("CreationDate"));
+					payload.add(jsonArray.getJSONObject(i).getString("Size"));
+					payload.add(jsonArray.getJSONObject(i).getString("SHA256TreeHash"));
+				} 
+				catch (JSONException e) 
+				{
+					e.printStackTrace();
+				}
+				h.put(key, payload);
+				
 			}
-			h.put(key, payload);
-			
+		}
+		catch (NullPointerException e)
+		{
+			e.printStackTrace();
 		}
 		
 		return h;
