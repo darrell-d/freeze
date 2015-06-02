@@ -193,8 +193,22 @@ public class SNSPolling {
         }catch(IOException e) {
             throw new AmazonClientException("Unable to save archive", e);
         }finally{
-            try {in.close();}  catch (Exception e) {}
-            try {out.close();}  catch (Exception e) {}             
+            try 
+            {
+            	in.close();
+        	}  
+            catch (Exception e) 
+            {
+            	e.printStackTrace();
+            }
+            try 
+            {
+            	out.close();
+        	}  
+            catch (Exception e) 
+            {
+            	e.printStackTrace();
+            }             
         }
         System.out.println("Retrieved inventory to " + fileName);
     }
