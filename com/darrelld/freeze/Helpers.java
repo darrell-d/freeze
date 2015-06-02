@@ -77,7 +77,7 @@ public class Helpers {
 		return dateFormat.format(date);
 	}
 	
-	public static HashMap<String, ArrayList<String>> createFileHash(String vaultName, String region) throws JSONException
+	public static HashMap<String, ArrayList<String>> createFileHash(String vaultName, String region)
 	{
 		String filename = vaultName + "__" + region;
 		String content = "";
@@ -108,13 +108,20 @@ public class Helpers {
 		
 		for(int i = 0; i < jsonArray.length(); i ++)
 		{
-			key = jsonArray.getJSONObject(i).getString("SHA256TreeHash");
-			payload.add(jsonArray.getJSONObject(i).getString("ArchiveId"));
-			payload.add(jsonArray.getJSONObject(i).getString("ArchiveDescription"));
-			payload.add(jsonArray.getJSONObject(i).getString("CreationDate"));
-			payload.add(jsonArray.getJSONObject(i).getString("Size"));
-			payload.add(jsonArray.getJSONObject(i).getString("SHA256TreeHash"));
-			
+			try 
+			{
+				key = jsonArray.getJSONObject(i).getString("SHA256TreeHash");
+	
+				payload.add(jsonArray.getJSONObject(i).getString("ArchiveId"));
+				payload.add(jsonArray.getJSONObject(i).getString("ArchiveDescription"));
+				payload.add(jsonArray.getJSONObject(i).getString("CreationDate"));
+				payload.add(jsonArray.getJSONObject(i).getString("Size"));
+				payload.add(jsonArray.getJSONObject(i).getString("SHA256TreeHash"));
+			} 
+			catch (JSONException e) 
+			{
+				e.printStackTrace();
+			}
 			h.put(key, payload);
 			
 		}
