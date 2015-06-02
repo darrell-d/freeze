@@ -64,7 +64,7 @@ public class SNSPolling {
 	private String userID;
 	private String region;
 
-	private static String jobID;
+	private String jobID;
 	
 	public static final long _SLEEPTIME = 600; 
 	private static final long _10MINS = _SLEEPTIME * 1000;
@@ -246,6 +246,7 @@ public class SNSPolling {
 	}
 
 	public static String getVault() {
+	
 		return vault;
 	}
 
@@ -258,7 +259,7 @@ public class SNSPolling {
 	}
 
 	public void setSqsQueueName(String sqsQueueName) {
-		SNSPolling.sqsQueueName = sqsQueueName;
+		this.sqsQueueName = sqsQueueName;
 	}
 
 	public static String getSnsTopicName() {
@@ -266,7 +267,7 @@ public class SNSPolling {
 	}
 
 	public void setSnsTopicName(String snsTopicName) {
-		SNSPolling.snsTopicName = snsTopicName;
+		this.snsTopicName = snsTopicName;
 	}
 	
 	

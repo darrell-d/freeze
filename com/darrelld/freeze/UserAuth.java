@@ -23,7 +23,7 @@ public class UserAuth {
 	private static AmazonGlacierClient client;
 	private static String userArn = "";
 	private static String userID = "";
-	private static int region;
+	private int region;
 
 	private static final int _USERID_TOKEN_LOCATION = 4;
 	private static final String _USERHOME = System.getProperty("user.home");
@@ -181,7 +181,7 @@ public class UserAuth {
 	}
 
 	public  void setRegion(int region) {
-		UserAuth.region = region;
+		this.region = region;
 	}
 
 
