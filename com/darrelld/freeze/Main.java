@@ -109,7 +109,7 @@ public class Main {
     			list();
     			break;
     		case "version":
-    			Helpers.printVersion();
+    			Utilities.printVersion();
     			break;
     	}
     }
@@ -191,7 +191,7 @@ public class Main {
 	private static void download(String id)
 	{
 		ArchiveTransferManager atm = new ArchiveTransferManager(auth.getClient(), auth.getCredentials());
-		HashMap<String,ArrayList<String>> fileHash = Helpers.createFileHash(vaultName, Region.getRegion(Regions.values()[auth.getRegion()]).getName());
+		HashMap<String,ArrayList<String>> fileHash = Utilities.createFileHash(vaultName, Region.getRegion(Regions.values()[auth.getRegion()]).getName());
 		
 		for (Entry<String, ArrayList<String>> e : fileHash.entrySet()) 
 		{
@@ -257,7 +257,7 @@ public class Main {
     private static void listArchives(){
 
     	try{
-	    	String content = Helpers.readFile(SNSPolling.fileName, StandardCharsets.UTF_8);
+	    	String content = Utilities.readFile(SNSPolling.fileName, StandardCharsets.UTF_8);
 	    	
 			JSONArray jsonArray = new JSONObject(content).getJSONArray("ArchiveList");
 			String inventoryDate_RAW = new JSONObject(content).getString("InventoryDate");
@@ -270,7 +270,7 @@ public class Main {
 			timeData.put("outputTimeZone", timezone);
 			timeData.put("payload", inventoryDate_RAW);
 			
-			String inventoryDate = Helpers.parseZuluTime(timeData);
+			String inventoryDate = Utilities.parseZuluTime(timeData);
 			
 			int listLength = jsonArray.length();
 			

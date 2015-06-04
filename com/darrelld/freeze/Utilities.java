@@ -22,7 +22,7 @@ import com.amazonaws.util.json.JSONObject;
 
 import freemarker.core.ParseException;
 
-public class Helpers {
+public class Utilities {
 	private static final String _VERSION = "v0.02";
 
 	//Read a file and return text as a string
