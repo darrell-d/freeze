@@ -190,13 +190,18 @@ public class Main {
 	
 	private static void download(String id)
 	{
+		if(id.length() < 4)
+		{
+			System.out.println("Please provide 4 or more characters in the ID");
+			download(scanner.next());
+		}
 		ArchiveTransferManager atm = new ArchiveTransferManager(auth.getClient(), auth.getCredentials());
 		HashMap<String,ArrayList<String>> fileHash = Utilities.createFileHash(vaultName, Region.getRegion(Regions.values()[auth.getRegion()]).getName());
 		
 		for (Entry<String, ArrayList<String>> e : fileHash.entrySet()) 
 		{
 			String s = e.getKey();
-			if (e.getKey().startsWith(id))
+			if (s.startsWith(id))
 			{
 				System.out.println("File found requesting download");
 				String archiveId = fileHash.get(e.getKey()).get(0);
