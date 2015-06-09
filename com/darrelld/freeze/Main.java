@@ -8,13 +8,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Scanner;
-
 import org.apache.commons.codec.binary.Base64;
-
-import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.regions.Region;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.glacier.model.DescribeVaultOutput;
@@ -30,6 +26,7 @@ import com.amazonaws.util.json.JSONObject;
 
 public class Main {
 
+	private static final int MIN_ID_LENGTH = 4;
 	private static final int _1KB = 1024;
     private static final int _1MB = 1048576;
     private static final int _1GB = 1073741824;
@@ -190,7 +187,7 @@ public class Main {
 	
 	private static void download(String id)
 	{
-		if(id.length() < 4)
+		if(id.length() < MIN_ID_LENGTH)
 		{
 			System.out.println("Please provide 4 or more characters in the ID");
 			download(scanner.next());
