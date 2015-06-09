@@ -195,17 +195,12 @@ public class Main {
 		
 		for (Entry<String, ArrayList<String>> e : fileHash.entrySet()) 
 		{
-			//TODO: Fix getting key.
 			String s = e.getKey();
 			if (e.getKey().startsWith(id))
 			{
+				System.out.println("File found requesting download");
 				String archiveId = fileHash.get(e.getKey()).get(0);
 				atm.download(vaultName, archiveId, new File("/freeze-downloads/" + fileHash.get(e.getKey()).get(1)));
-			}
-			else
-			{
-				System.out.println("No ID found. Please enter a new ID");
-				download(scanner.next());
 			}
 		}
 	}

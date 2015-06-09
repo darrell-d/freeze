@@ -14,13 +14,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.TimeZone;
 
-import org.aspectj.weaver.ast.HasAnnotation;
-
 import com.amazonaws.util.json.JSONArray;
 import com.amazonaws.util.json.JSONException;
 import com.amazonaws.util.json.JSONObject;
-
-import freemarker.core.ParseException;
 
 public class Utilities {
 	private static final String _VERSION = "v0.02";
@@ -111,7 +107,7 @@ public class Utilities {
 			{
 				try 
 				{
-					key = jsonArray.getJSONObject(i).getString("SHA256TreeHash");
+					key = jsonArray.getJSONObject(i).getString("ArchiveId");
 		
 					payload.add(jsonArray.getJSONObject(i).getString("ArchiveId"));
 					payload.add(jsonArray.getJSONObject(i).getString("ArchiveDescription"));
