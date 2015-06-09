@@ -274,13 +274,14 @@ public class Main {
 			for(int i = 0; i < listLength; i++)
 			{
 				String filename = jsonArray.getJSONObject(i).getString("ArchiveDescription");
+				String archiveID = jsonArray.getJSONObject(i).getString("ArchiveId");
 				//Check for a file sequence that some application uses to base64 encoding.
 				if(filename.contains(_BASE64_STRIP_TEXT))
 				{
 					filename= filename.substring(_BASE64_FIX_POSITION,filename.indexOf("</p>"));
 					filename = new String(Base64.decodeBase64(filename.getBytes()));
 				}
-				System.out.println(filename);
+				System.out.println(filename + " -- " + archiveID.subSequence(0, 4) );
 			}
 			
 			System.out.println("\nInventory last updated " + inventoryDate + " " + timezone + ", would you like to update? Y/N");
