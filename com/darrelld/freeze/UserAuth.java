@@ -40,7 +40,6 @@ public class UserAuth {
     	try {
 			credentials = new PropertiesCredentials(new File(_USERHOME + "/awsCredentials.properties"));
 		} catch (IllegalArgumentException | IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		iamClient = new AmazonIdentityManagementClient(credentials);
