@@ -14,7 +14,7 @@ To view a list of your files run:
 > java -jar freeze.jar list
 
 To download a file after getting the archive ID from listing run:
-> java -jar freeze.jar download <ID>
+> java -jar freeze.jar download XXXX
 
 You need a minimum of 4 characters from the ID
 
