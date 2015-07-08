@@ -1,4 +1,6 @@
 package com.darrelld.freeze;
+import java.awt.GraphicsEnvironment;
+import java.io.Console;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -22,7 +24,6 @@ import com.amazonaws.services.sns.AmazonSNSClient;
 import com.amazonaws.services.sqs.AmazonSQSClient;
 import com.amazonaws.util.json.JSONArray;
 import com.amazonaws.util.json.JSONObject;
-
 public class Main {
 
 	private static final int MIN_ID_LENGTH = 4;
@@ -242,10 +243,16 @@ public class Main {
             System.out.println("Jobid = " + jobId);
             
             Boolean success = SNSPolling.waitForJobToComplete(jobId, SNSPolling.sqsQueueURL);
-            if (!success) { throw new Exception("Job did not complete successfully."); }
+            if (!success) 
+            { 
+            	throw new Exception("Job did not complete successfully."); 
+        	}
             SNSPolling.downloadJobOutput(jobId);
             
             SNSPolling.cleanUp();
+            
+            //Exit 0 - success
+            System.exit(0);
             
         } catch (Exception e) {
             System.err.println("Inventory retrieval failed.");
