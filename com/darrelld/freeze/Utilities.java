@@ -18,7 +18,7 @@ import com.amazonaws.util.json.JSONException;
 import com.amazonaws.util.json.JSONObject;
 
 public class Utilities {
-	private static final String _VERSION = "v0.02";
+	private static final String _VERSION = "v0.03-alpha";
 
 	//Read a file and return text as a string
 	public static String readFile(String path, Charset encoding) throws IOException 

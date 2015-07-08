@@ -37,13 +37,12 @@ public class Main {
     private static int numArgs;
     
     private static String[] validCommands = {"upload","list", "download", "version"};
+    private static HashMap<String, Boolean> switches = new HashMap<String,Boolean>();
 	private static String vaultName = "";
 	private static String command = "";
 	private static String filePath = "";
 	private static String userID = "";
 	private static UserAuth auth;
-	
-	private static List<String>flags = new ArrayList<String>();
 	
 	private static Scanner scanner = new Scanner(System.in);
 	
@@ -53,9 +52,7 @@ public class Main {
 	private static SNSPolling poll;
 	
     public static void main(String[] args) throws IOException, ParseException {
-    	/*GUI freezeUI = new GUI();
     	
-    	freezeUI.setVisible(true);*/
     	/*
     	 * Expected form of arguments is 'freeze ([command]?[fileLocation]|[-otherArgs]?)
     	 * Current commands are list and upload
@@ -63,6 +60,7 @@ public class Main {
     	 * */
     	
     	numArgs = args.length;
+    	switches.put("gui",false);
     	
     	if(numArgs == 0)
     	{
@@ -79,38 +77,53 @@ public class Main {
     		return;
     	}
     	
+    	//Expect multiple switches but one command
     	
-    	command = args[0];
-    	
-    	if(!Arrays.asList(validCommands).contains(command))
+    	for(int i = 0; i < numArgs; i++)
     	{
-    		throw new UnsupportedOperationException(command + " is not a valid command");
+    		if(args[i].charAt(0) == '-')
+			{
+    			switches.put(args[i].substring(1,args[i].length()), true);
+    		}
+    		else
+    		{
+    			command = args[i];
+    	    	if(!Arrays.asList(validCommands).contains(command))
+    	    	{
+    	    		throw new UnsupportedOperationException(command + " is not a valid command");
+    	    	}
+    		}
     	}
     	
-    	for(int i = 2; i < args.length; i++)
-    	{
-    		flags.add(args[i]);
-    	}
     	
-    	switch(command.toLowerCase())
+    	if(!switches.get("gui"))
     	{
-			case "upload":
-				filePath = args[1];
-				authorize();
-				upload();
-				break;
-			case "download":
-				authorize();
-				String id = args[1];
-				download(id);
-				break;
-    		case "list":
-    			authorize();
-    			list();
-    			break;
-    		case "version":
-    			Utilities.printVersion();
-    			break;
+	    	switch(command.toLowerCase())
+	    	{
+				case "upload":
+					filePath = args[1];
+					authorize();
+					upload();
+					break;
+				case "download":
+					authorize();
+					String id = args[1];
+					download(id);
+					break;
+	    		case "list":
+	    			authorize();
+	    			list();
+	    			break;
+	    		case "version":
+	    			Utilities.printVersion();
+	    			break;
+	    	}
+    	}
+    	else
+    	{
+    		GUI freezeUI = new GUI();
+        	
+        	freezeUI.setVisible(true);
     	}
     }
 
