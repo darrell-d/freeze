@@ -23,7 +23,6 @@ import com.amazonaws.services.sqs.AmazonSQSClient;
 import com.amazonaws.util.json.JSONArray;
 import com.amazonaws.util.json.JSONObject;
 
-
 public class Main {
 
 	private static final int MIN_ID_LENGTH = 4;
@@ -53,6 +52,9 @@ public class Main {
 	private static SNSPolling poll;
 	
     public static void main(String[] args) throws IOException, ParseException {
+    	/*GUI freezeUI = new GUI();
+    	
+    	freezeUI.setVisible(true);*/
     	/*
     	 * Expected form of arguments is 'freeze ([command]?[fileLocation]|[-otherArgs]?)
     	 * Current commands are list and upload
@@ -290,6 +292,10 @@ public class Main {
 			if(result.compareTo("y") == 0)
 			{
 				generateArchiveListRequest();
+			}
+			else
+			{
+				System.exit(0);
 			}
     	}
     	catch(Exception e)
