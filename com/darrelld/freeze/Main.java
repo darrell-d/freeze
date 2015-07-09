@@ -33,6 +33,11 @@ public class Main {
     private static final int _BASE64_FIX_POSITION = 14;
     private static final String _BASE64_STRIP_TEXT ="<m><v>2</v><p>";
     
+    private static final int EXIT_SAFE = 0;
+    private static final int NO_INPUT = 1;
+    private static final int NO_COMMAND = 2;
+    private static final int UNDEFINED_ERR = 99;
+    
     private static int vault;
     private static int numArgs;
     
@@ -71,14 +76,14 @@ public class Main {
     		System.out.println(path);
     		String instructions = Helpers.readFile(path, StandardCharsets.UTF_8);*/
     		System.out.println(
-    				"No arguments passed Expected form of arguments is 'freeze ([command]?[fileLocation]) \r\n" +
-    				"Current commands are list and upload \r\n" +
+    				"No arguments passed. Expected form of arguments is 'freeze ([command]?[fileLocation]) \r\n" +
+    				"Current commands are list, upload and download \r\n" +
     				"-otherArgs will take the form: -arg\"data\" or -arg when they get added \r\n");
-    		return;
+    		System.exit(NO_INPUT);
     	}
     	
     	//Expect multiple switches but one command
-    	
+    	command = "";
     	for(int i = 0; i < numArgs; i++)
     	{
     		if(args[i].charAt(0) == '-')
@@ -93,6 +98,14 @@ public class Main {
     	    		throw new UnsupportedOperationException(command + " is not a valid command");
     	    	}
     		}
+    	}
+    	
+    	if(command.contentEquals(""))
+    	{
+    		System.out.println(
+    				"No command passed" +
+    				"Current commands are list, upload and download \r\n");
+    		System.exit(NO_COMMAND);
     	}
     	
     	
@@ -265,7 +278,7 @@ public class Main {
             SNSPolling.cleanUp();
             
             //Exit 0 - success
-            System.exit(0);
+            System.exit(EXIT_SAFE);
             
         } catch (Exception e) {
             System.err.println("Inventory retrieval failed.");
@@ -315,7 +328,7 @@ public class Main {
 			}
 			else
 			{
-				System.exit(0);
+				System.exit(EXIT_SAFE);
 			}
     	}
     	catch(Exception e)
