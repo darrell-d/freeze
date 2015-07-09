@@ -1,20 +1,57 @@
 package com.darrelld.freeze;
 
-import javax.swing.JFrame;
+import java.awt.EventQueue;
 
-public class GUI extends JFrame {
-	
-	public GUI()
-	{
-		initUI();
+import javax.swing.JFrame;
+import javax.swing.JMenuBar;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import java.awt.Window.Type;
+
+public class GUI {
+
+	private JFrame frmFreeze;
+
+	/**
+	 * Launch the application.
+	 */
+	public static void main(String[] args) {
+		EventQueue.invokeLater(new Runnable() {
+			public void run() {
+				try {
+					GUI window = new GUI();
+					window.frmFreeze.setVisible(true);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
 	}
-	
-	private void initUI()
-	{
-        setTitle("Simple example");
-        setSize(300, 200);
-        setLocationRelativeTo(null);
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
+
+	/**
+	 * Create the application.
+	 */
+	public GUI() {
+		initialize();
+	}
+
+	/**
+	 * Initialize the contents of the frame.
+	 */
+	private void initialize() {
+		frmFreeze = new JFrame();
+		frmFreeze.setTitle("Freeze");
+		frmFreeze.setBounds(100, 100, 850, 850);
+		frmFreeze.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		
+		JMenuBar menuBar = new JMenuBar();
+		frmFreeze.setJMenuBar(menuBar);
+		
+		JMenu mnAccount = new JMenu("Account");
+		menuBar.add(mnAccount);
+		
+		JMenuItem mntmManageAccount = new JMenuItem("Manage Account");
+		mnAccount.add(mntmManageAccount);
 	}
 
 }
