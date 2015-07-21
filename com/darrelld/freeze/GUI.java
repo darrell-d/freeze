@@ -1,26 +1,34 @@
 package com.darrelld.freeze;
 
 import java.awt.EventQueue;
-import java.awt.Font;
-import java.awt.ScrollPane;
 
+import javax.swing.JFrame;
+import javax.swing.JMenuBar;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import java.awt.Window.Type;
+import javax.swing.JList;
+import java.awt.BorderLayout;
+import javax.swing.AbstractListModel;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
-import javax.swing.JButton;
-import javax.swing.JFrame;
+import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.JLabel;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-import javax.swing.JTabbedPane;
+import java.awt.Font;
 import javax.swing.JTable;
 import javax.swing.JTree;
-import javax.swing.LayoutStyle.ComponentPlacement;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import java.awt.Button;
+import java.awt.SystemColor;
+import javax.swing.UIManager;
+import javax.swing.JButton;
+import javax.swing.JTabbedPane;
+import javax.swing.JLayeredPane;
+import javax.swing.JPanel;
 
 public class GUI {
 
@@ -56,7 +64,7 @@ public class GUI {
 	private void initialize() {
 		frmFreeze = new JFrame();
 		frmFreeze.setTitle("Freeze");
-		frmFreeze.setBounds(100, 100, 850, 766);
+		frmFreeze.setBounds(100, 100, 850, 592);
 		frmFreeze.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
 		JMenuBar menuBar = new JMenuBar();
@@ -109,19 +117,16 @@ public class GUI {
 						.addComponent(btnDelete))
 					.addPreferredGap(ComponentPlacement.UNRELATED)
 					.addComponent(splitPane, GroupLayout.PREFERRED_SIZE, 245, GroupLayout.PREFERRED_SIZE)
-					.addGap(28)
-					.addComponent(tabbedPane, GroupLayout.PREFERRED_SIZE, 372, GroupLayout.PREFERRED_SIZE)
-					.addContainerGap(101, Short.MAX_VALUE))
+					.addGap(18)
+					.addComponent(tabbedPane, GroupLayout.DEFAULT_SIZE, 454, Short.MAX_VALUE)
+					.addGap(29))
 		);
 		
-		ScrollPane scrollPane_2 = new ScrollPane();
-		tabbedPane.addTab("Info", null, scrollPane_2, null);
+		JTabbedPane tabbedPane_1 = new JTabbedPane(JTabbedPane.TOP);
+		tabbedPane.addTab("New tab", null, tabbedPane_1, null);
 		
-		ScrollPane scrollPane_3 = new ScrollPane();
-		tabbedPane.addTab("Log", null, scrollPane_3, null);
-		
-		ScrollPane scrollPane_1 = new ScrollPane();
-		tabbedPane.addTab("Actions", null, scrollPane_1, null);
+		JTabbedPane tabbedPane_2 = new JTabbedPane(JTabbedPane.TOP);
+		tabbedPane.addTab("New tab", null, tabbedPane_2, null);
 		
 		JTree tree = new JTree();
 		splitPane.setLeftComponent(tree);

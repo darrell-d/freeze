@@ -1,6 +1,4 @@
 package com.darrelld.freeze;
-import java.awt.GraphicsEnvironment;
-import java.io.Console;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -12,8 +10,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Scanner;
-
-import javax.swing.JFrame;
 
 import org.apache.commons.codec.binary.Base64;
 import com.amazonaws.regions.Region;
@@ -60,12 +56,6 @@ public class Main {
 	private static SNSPolling poll;
 	
     public static void main(String[] args) throws IOException, ParseException {
-    	
-    	/*
-    	 * Expected form of arguments is 'freeze ([command]?[fileLocation]|[-otherArgs]?)
-    	 * Current commands are list and upload
-    	 * -otherArgs will take the form: -arg"data" or -arg 
-    	 * */
     	
     	numArgs = args.length;
     	
