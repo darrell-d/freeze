@@ -210,7 +210,7 @@ public class SNSPolling {
             	e.printStackTrace();
             }             
         }
-        System.out.println("Retrieved inventory to " + fileName);
+        System.out.println("\r\nRetrieved inventory to " + fileName);
     }
     
     public static void cleanUp() {
