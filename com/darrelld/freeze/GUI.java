@@ -54,4 +54,13 @@ public class GUI {
 		mnAccount.add(mntmManageAccount);
 	}
 
+	public void setVisible(boolean b) {
+		frmFreeze.setVisible(b);
+		
+	}
+	public boolean isVisilble()
+	{
+		return frmFreeze.isVisible();
+	}
+
 }

@@ -12,6 +12,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Scanner;
+
+import javax.swing.JFrame;
+
 import org.apache.commons.codec.binary.Base64;
 import com.amazonaws.regions.Region;
 import com.amazonaws.regions.Regions;
@@ -65,79 +68,64 @@ public class Main {
     	 * */
     	
     	numArgs = args.length;
-    	switches.put("gui",false);
     	
     	if(numArgs == 0)
     	{
-    		
-    		/*URL classURL = Main.class.getResource("instructions");
-    		String path = classURL.getPath();
-    		path = path.substring(1,path.length());
-    		System.out.println(path);
-    		String instructions = Helpers.readFile(path, StandardCharsets.UTF_8);*/
-    		System.out.println(
-    				"No arguments passed. Expected form of arguments is 'freeze ([command]?[fileLocation]) \r\n" +
-    				"Current commands are list, upload and download \r\n" +
-    				"-otherArgs will take the form: -arg\"data\" or -arg when they get added \r\n");
-    		System.exit(NO_INPUT);
-    	}
-    	
-    	//Expect multiple switches but one command
-    	command = "";
-    	for(int i = 0; i < numArgs; i++)
-    	{
-    		if(args[i].charAt(0) == '-')
-			{
-    			switches.put(args[i].substring(1,args[i].length()), true);
-    		}
-    		else
-    		{
-    			command = args[i];
-    	    	if(!Arrays.asList(validCommands).contains(command))
-    	    	{
-    	    		throw new UnsupportedOperationException(command + " is not a valid command");
-    	    	}
-    		}
-    	}
-    	
-    	if(command.contentEquals(""))
-    	{
-    		System.out.println(
-    				"No command passed" +
-    				"Current commands are list, upload and download \r\n");
-    		System.exit(NO_COMMAND);
-    	}
-    	
-    	
-    	if(!switches.get("gui"))
-    	{
-	    	switch(command.toLowerCase())
-	    	{
-				case "upload":
-					filePath = args[1];
-					authorize();
-					upload();
-					break;
-				case "download":
-					authorize();
-					String id = args[1];
-					download(id);
-					break;
-	    		case "list":
-	    			authorize();
-	    			list();
-	    			break;
-	    		case "version":
-	    			Utilities.printVersion();
-	    			break;
-	    	}
+    		GUI freezeUI = new GUI();
+        	freezeUI.setVisible(true);
     	}
     	else
     	{
-    		GUI freezeUI = new GUI();
-        	
-        	freezeUI.setVisible(true);
+	    	
+	    	//Expect multiple switches but one command
+	    	command = "";
+	    	for(int i = 0; i < numArgs; i++)
+	    	{
+	    		if(args[i].charAt(0) == '-')
+				{
+	    			switches.put(args[i].substring(1,args[i].length()), true);
+	    		}
+	    		else
+	    		{
+	    			command = args[i];
+	    	    	if(!Arrays.asList(validCommands).contains(command))
+	    	    	{
+	    	    		throw new UnsupportedOperationException(command + " is not a valid command");
+	    	    	}
+	    		}
+	    	}
+	    	
+	    	if(command.contentEquals(""))
+	    	{
+	    		System.out.println(
+	    				"No command passed\r\n" +
+	    				"Current commands are list, upload and download \r\n");
+	    		System.exit(NO_COMMAND);
+	    	}
+	    	
+	    	
+		    	switch(command.toLowerCase())
+		    	{
+					case "upload":
+						filePath = args[1];
+						authorize();
+						upload();
+						break;
+					case "download":
+						authorize();
+						String id = args[1];
+						download(id);
+						break;
+		    		case "list":
+		    			authorize();
+		    			list();
+		    			break;
+		    		case "version":
+		    			Utilities.printVersion();
+		    			break;
+		    	}
     	}
+
     }
 
 	private static void authorize() throws FileNotFoundException {
