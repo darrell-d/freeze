@@ -48,6 +48,8 @@ public class Main {
 	private static String userID = "";
 	private static UserAuth auth;
 	
+	private static boolean isUsingGUI = false;
+	
 	private static Scanner scanner = new Scanner(System.in);
 	
 	
@@ -332,6 +334,14 @@ public class Main {
 
 	public static void setPoll(SNSPolling poll) {
 		Main.poll = poll;
+	}
+
+	public static boolean isUsingGUI() {
+		return isUsingGUI;
+	}
+
+	public static void setUsingGUI(boolean isUsingGUI) {
+		Main.isUsingGUI = isUsingGUI;
 	}
 	
 	

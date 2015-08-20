@@ -74,11 +74,17 @@ public class UserAuth {
 	//Create .properties file for keys
 	private  void createCredentials()
 	{
-		System.out.println("No AWS security keys found. Please enter:");
-    	System.out.print("secretKey = ");
-    	String secretKey = scanner.nextLine();
-    	System.out.print("accessKey = ");
-    	String accessKey = scanner.nextLine();
+		String secretKey = "";
+		String accessKey = "";
+		
+		if(!Main.isUsingGUI())
+		{
+			System.out.println("No AWS security keys found. Please enter:");
+	    	System.out.print("secretKey = ");
+	    	secretKey = scanner.nextLine();
+	    	System.out.print("accessKey = ");
+	    	accessKey = scanner.nextLine();
+		}
     	
 		try(FileWriter output = new FileWriter(_USERHOME + "/awsCredentials.properties")) 
 		{			

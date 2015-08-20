@@ -6,10 +6,6 @@ import javax.swing.JFrame;
 import javax.swing.JMenuBar;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
-import java.awt.Window.Type;
-import javax.swing.JList;
-import java.awt.BorderLayout;
-import javax.swing.AbstractListModel;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.LayoutStyle.ComponentPlacement;
@@ -24,21 +20,9 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
-import java.awt.Button;
-import java.awt.Component;
-import java.awt.SystemColor;
-import javax.swing.UIManager;
 import javax.swing.JButton;
 import javax.swing.JTabbedPane;
-import javax.swing.JLayeredPane;
-import javax.swing.JPanel;
-
-import com.amazonaws.services.storagegateway.model.AddCacheRequest;
-
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.InputStreamReader;
 
 public class GUI {
