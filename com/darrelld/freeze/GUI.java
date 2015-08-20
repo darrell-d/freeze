@@ -17,6 +17,8 @@ import javax.swing.JLabel;
 import java.awt.Font;
 import javax.swing.JTable;
 import javax.swing.JTree;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.table.DefaultTableModel;
@@ -137,10 +139,8 @@ public class GUI {
 		JTabbedPane tabbedPane_2 = new JTabbedPane(JTabbedPane.TOP);
 		tabbedPane.addTab("New tab", null, tabbedPane_2, null);
 		
-		JTree tree = new JTree();
+		final JTree tree = new JTree();
 		splitPane.setLeftComponent(tree);
-		
-		final File file_regions = new File("src/regions.txt");
 		
 		tree.setModel(new DefaultTreeModel(
 			new DefaultMutableTreeNode("All Regions") {
@@ -161,6 +161,22 @@ public class GUI {
 				}
 			}
 		));
+		
+		tree.addTreeSelectionListener(new TreeSelectionListener() {
+			
+			@Override
+			public void valueChanged(TreeSelectionEvent e) {
+				DefaultMutableTreeNode node = (DefaultMutableTreeNode)tree.getLastSelectedPathComponent();
+				
+				//Return if nothing is selected
+				if(node == null) return;
+				
+				//Retrieve selected node
+				Object nodeInfo = node.getUserObject();
+				
+				//TODO: Change archive listing
+			}
+		});
 
 		
 		JScrollPane scrollPane = new JScrollPane();
