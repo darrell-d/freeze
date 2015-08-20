@@ -319,6 +319,9 @@ public class Main {
 	private static boolean doesFileListExist()
 	{
 		File f = new File(SNSPolling.fileName);
+		File ff = new File("files/regions.txt");
+		
+		System.out.println(ff.exists());
 		
 		return f.exists();
 	}

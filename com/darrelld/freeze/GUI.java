@@ -23,12 +23,21 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import java.awt.Button;
+import java.awt.Component;
 import java.awt.SystemColor;
 import javax.swing.UIManager;
 import javax.swing.JButton;
 import javax.swing.JTabbedPane;
 import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
+
+import com.amazonaws.services.storagegateway.model.AddCacheRequest;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.InputStreamReader;
 
 public class GUI {
 
@@ -130,37 +139,29 @@ public class GUI {
 		
 		JTree tree = new JTree();
 		splitPane.setLeftComponent(tree);
+		
+		final File file_regions = new File("src/regions.txt");
+		
 		tree.setModel(new DefaultTreeModel(
 			new DefaultMutableTreeNode("All Regions") {
 				{
 					DefaultMutableTreeNode node_1;
-					node_1 = new DefaultMutableTreeNode("US East");
-						node_1.add(new DefaultMutableTreeNode("-"));
-					add(node_1);
-					node_1 = new DefaultMutableTreeNode("US West 1");
-						node_1.add(new DefaultMutableTreeNode("-"));
-					add(node_1);
-					node_1 = new DefaultMutableTreeNode("US West 2");
-						node_1.add(new DefaultMutableTreeNode("-"));
-					add(node_1);
-					node_1 = new DefaultMutableTreeNode("EU West");
-						node_1.add(new DefaultMutableTreeNode("-"));
-					add(node_1);
-					node_1 = new DefaultMutableTreeNode("AP Southeast 1");
-						node_1.add(new DefaultMutableTreeNode("-"));
-					add(node_1);
-					node_1 = new DefaultMutableTreeNode("AP Southeast 2");
-						node_1.add(new DefaultMutableTreeNode("-"));
-					add(node_1);
-					node_1 = new DefaultMutableTreeNode("AP Northeast 1");
-						node_1.add(new DefaultMutableTreeNode("-"));
-					add(node_1);
-					node_1 = new DefaultMutableTreeNode("SA East");
-						node_1.add(new DefaultMutableTreeNode("-"));
-					add(node_1);
+					try (BufferedReader br = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream("regions.txt"))) ) {
+					    String line;
+					    while ((line = br.readLine()) != null) {
+					    	node_1 = new DefaultMutableTreeNode(line);
+					    	node_1.add(new DefaultMutableTreeNode("X"));
+					    	add(node_1);
+					    }
+					}
+					catch(Exception e)
+					{
+						e.printStackTrace();
+					}
 				}
 			}
 		));
+
 		
 		JScrollPane scrollPane = new JScrollPane();
 		splitPane.setRightComponent(scrollPane);

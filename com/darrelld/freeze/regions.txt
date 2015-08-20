@@ -1,0 +1,8 @@
+US East
+US West 1
+US West 2
+EU West
+AP SouthEast 1
+AP SouthEast 2
+AP NorthEast 1
+SA East
